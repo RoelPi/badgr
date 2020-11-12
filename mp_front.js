@@ -68,36 +68,36 @@ class Badgr {
 			// Set initial referrer
 			localStorage.setItem('initial_referrer', document.referrer)
 			// Set referring domain
-			localStorage.setItem('initial_referring_domain', extractHostname(document.referrer))
+			localStorage.setItem('initial_referring_domain', this.extractHostname(document.referrer))
 
 			// Set search engine
 			if (document.referrer.includes('google')) {
 				localStorage.setItem('search_engine','Google')
-			} else if (document.referred.includes('bing')) {
+			} else if (document.referrer.includes('bing')) {
 				localStorage.setItem('search_engine', 'Bing')
-			} else if (document.referred.includes('yandex')) {
+			} else if (document.referrer.includes('yandex')) {
 				localStorage.setItem('search_engine', 'Yandex')
-			} else if (document.referred.includes('swisscows')) {
+			} else if (document.referrer.includes('swisscows')) {
 				localStorage.setItem('search_engine', 'Swisscows')
-			} else if (document.referred.includes('duckduckgo')) {
+			} else if (document.referrer.includes('duckduckgo')) {
 				localStorage.setItem('search_engine', 'DuckDuckGo')
-			} else if (document.referred.includes('startpage')) {
+			} else if (document.referrer.includes('startpage')) {
 				localStorage.setItem('search_engine', 'Startpage')
-			} else if (document.referred.includes('searchencrypt')) {
+			} else if (document.referrer.includes('searchencrypt')) {
 				localStorage.setItem('search_engine', 'Search Encrypt')
-			} else if (document.referred.includes('gibiru')) {
+			} else if (document.referrer.includes('gibiru')) {
 				localStorage.setItem('search_engine', 'Gibiru')
-			} else if (document.referred.includes('onesearch')) {
+			} else if (document.referrer.includes('onesearch')) {
 				localStorage.setItem('search_engine', 'OneSearch')
-			} else if (document.referred.includes('yahoo')) {
+			} else if (document.referrer.includes('yahoo')) {
 				localStorage.setItem('search_engine', 'Yahoo')
-			} else if (document.referred.includes('givewater')) {
+			} else if (document.referrer.includes('givewater')) {
 				localStorage.setItem('search_engine', 'giveWater')
-			} else if (document.referred.includes('ekoru')) {
+			} else if (document.referrer.includes('ekoru')) {
 				localStorage.setItem('search_engine', 'Ekoru')
-			} else if (document.referred.includes('ecosia')) {
+			} else if (document.referrer.includes('ecosia')) {
 				localStorage.setItem('search_engine', 'Ecosia')
-			} else if (document.referred.includes('boardreader')) {
+			} else if (document.referrer.includes('boardreader')) {
 				localStorage.setItem('search_engine', 'Boardreader')
 			} else {
 				localStorage.setItem('search_engine', 'none')
