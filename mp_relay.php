@@ -16,9 +16,12 @@ function getRealIpAddr() {
 
 $badgr = json_decode(file_get_contents('php://input'), true);
 $badgr['allProperties']['ip'] = getRealIpAddr();
+
 // Pass IP address for geolocation.
 require_once("mp/lib/Mixpanel.php");
-$mp = Mixpanel::getInstance("8d6177f4786fcab7b0388720e7463c98");
+
+// Replace this with your mixpanel token
+$mp = Mixpanel::getInstance("<YOUR TOKEN>");
 
 $mp->people->set($badgr['userID'], array(), $ip = getRealIpAddr(), $ignore_time = true);
 
