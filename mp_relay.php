@@ -22,10 +22,16 @@ require_once("mp/lib/Mixpanel.php");
 
 // Replace this with your mixpanel token
 $mp = Mixpanel::getInstance("<YOUR TOKEN>");
-
-$mp->people->set($badgr['userID'], array(), $ip = getRealIpAddr(), $ignore_time = true);
-
 $mp->identify($badgr['userID']);
-$mp->track($badgr['event'], $badgr['allProperties']);
+if ($badgr['action'] == 'track') {
+	$mp->people->set($badgr['userID'], array(), $ip = getRealIpAddr(), $ignore_time = true);
+	$mp->track($badgr['event'], $badgr['allProperties']);
+} elseif ($badgr['action'] == 'setProfile') {
+	$mp->people->set($badgr['userID'], $badgr['userProperties'], $ip = getRealIpAddr(), $ignore_time = true);
+} elseif ($badgr['action'] == 'increment') {
+	$mp->people->increment($badgr['userID'], $badgr['metric'], $badgr['incValue']);
+} elseif ($badgr['action'] == 'addToList') {
+	$mp->people->append($badgr['userID'], $badgr['list'], $badgr['item']);
+}
 
 ?>

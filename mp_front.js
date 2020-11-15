@@ -42,10 +42,30 @@ class Badgr {
 
 	track(eventName, properties = {}) {
 		var allProperties = Object.assign({}, properties, this.defaultProperties);
-		var payload = {"event": eventName, "userID": this.setWUID(), "allProperties": allProperties}
+		var payload = {"action": "track", "event": eventName, "userID": this.setWUID(), "allProperties": allProperties}
 		this.sendToEndpoint(payload);
 		return;
 	}
+
+	setProfile(properties = {}) {
+		var payload = {"action": "setProfile", "userID": this.setWUID(), "userProperties": properties}
+		this.sendToEndpoint(payload);
+		return
+	}
+
+	increment(metric, increment_value) {
+		var payload = {"action": "increment", "userID": this.setWUID(), "metric": metric, "incValue": increment_value}
+		this.sendToEndpoint(payload);
+		return
+	}
+
+	append(list, item) {
+		var payload = {"action": "append", "userID": this.setWUID(), "list": list, "item": item}
+		this.sendToEndpoint(payload);
+		return
+	}
+
+
 	sendToEndpoint(pl) {
 		fetch(this.endpoint, {
 			method: 'post',
