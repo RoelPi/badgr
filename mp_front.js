@@ -54,7 +54,7 @@ class Badgr {
 		return;
 	}
 
-	trackSearch(searchTerm, searchResults = {}) {
+	trackSearch(searchTerm, searchResults = [], searchProperties = {}) {
 		return;
 	}
 
