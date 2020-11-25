@@ -3,6 +3,7 @@ class Badgr {
 		this.dt = new Date();
 		this.dt_offset = dt.getTimezoneOffset().toString();
 		this.endpoint = endpoint;
+		this.visit_length = 0.5 // hours
 	}
 
 	init() {
@@ -10,61 +11,95 @@ class Badgr {
 		this.setBrowserProperties();
 
 		this.defaultProperties = {
-			"$insert_id": this.generateRandom(16),
-			"$browser": this.browserName,
-			"$browserVersion": this.browserVersion,
-			"$device": this.getDeviceCategory(),
-			"$user_id": this.setWUID(),
-			"$distinct_id": this.setWUID(),
-			"$current_url": window.location.pathname,
-			"$initial_referrer": localStorage.getItem('initial_referrer'),
-			"$initial_referring_domain": localStorage.getItem('initial_referring_domain'),
-			"$os": this.getOS(),
-			"$referrer": document.referrer,
-			"$screen_height": screen.height,
-			"$screen_width": screen.width,
-			"$search_engine": localStorage.getItem('search_engine'),
-			"URL Parameters": window.location.search,
-			"Page Title": document.title,
-			"Protocol": window.location.protocol,
-			"Hostname": window.location.host,
+			"hit_id": this.generateRandom(24),
+			"user_id": this.setWUID(),
+			"visit_id": this.setWSID(),
+			"browser_name": this.browserName,
+			"browser_version": this.browserVersion,
+			"device": this.getDeviceCategory(),
+			"current_url": window.location.pathname,
+			"initial_referrer": localStorage.getItem('initial_referrer'),
+			"initial_referring_domain": localStorage.getItem('initial_referring_domain'),
+			"referring_search_engine": localStorage.getItem('search_engine'),
+			"os": this.getOS(),
+			"referrer": document.referrer,
+			"screen_height": screen.height,
+			"screen_width": screen.width,
+			"query_string": window.location.search,
+			"page_title": document.title,
+			"protocol": window.location.protocol,
+			"hostname": window.location.host,
 			"utm_campaign": this.getUrlParameter(window.location.pathname, 'utm_campaign'),
 			"utm_source": this.getUrlParameter(window.location.pathname, 'utm_source'),
 			"utm_medium": this.getUrlParameter(window.location.pathname, 'utm_medium'),
 			"utm_content": this.getUrlParameter(window.location.pathname, 'utm_content'),
 			"utm_term": this.getUrlParameter(window.location.pathname, 'utm_term'),
-			"Color Depth": screen.colorDepth.toString(),
-			"Browser Language": navigator.language,
-			"Timezone Offset": dt_offset,
-			"User Agent": navigator.userAgent
+			"color_depth": screen.colorDepth.toString(),
+			"browser_language": navigator.language,
+			"timezone_offset": dt_offset,
+			"user_agent": navigator.userAgent,
+			"queries": this.getAllURLParameters(),
+			"cookies": this.getAllCookeis()
 		}
 	}
 
-	track(eventName, properties = {}) {
-		var allProperties = Object.assign({}, properties, this.defaultProperties);
-		var payload = {"action": "track", "event": eventName, "userID": this.setWUID(), "allProperties": allProperties}
+	// Hit
+	trackEvent(eventName, eventProperties = {}) {
+		var properties = Object.assign({}, eventProperties, this.defaultProperties);
+		var payload = {
+			"event": eventName, 
+			"properties": properties
+		}
 		this.sendToEndpoint(payload);
 		return;
 	}
 
-	setProfile(properties = {}) {
-		var payload = {"action": "setProfile", "userID": this.setWUID(), "userProperties": properties}
-		this.sendToEndpoint(payload);
-		return
+	trackSearch(searchTerm, searchResults = {}) {
+		return;
 	}
 
-	increment(metric, increment_value) {
-		var payload = {"action": "increment", "userID": this.setWUID(), "metric": metric, "incValue": increment_value}
-		this.sendToEndpoint(payload);
-		return
+	trackMetrics(metrics = {}) {
+		return;
 	}
 
-	append(list, item) {
-		var payload = {"action": "append", "userID": this.setWUID(), "list": list, "item": item}
-		this.sendToEndpoint(payload);
-		return
+	// User
+	enrichUserProperty(userProperties = {}) {
+		return;
+	}
+	
+	enrichUserPropertyList(listName, listProperties = []) {
+		return;
 	}
 
+	// Product
+	trackProductView(productProperies = {}) {
+		return;
+	}
+
+	trackProductClick(productProperies = {}) {
+		return;
+	}
+
+	trackProductCartAdd(productProperies = {}) {
+		return;
+	}
+
+	trackProductCartRemove(productProperies = {}) {
+		return;
+	}
+
+	trackProductListView(productListName, products = []) {
+		return;
+	}
+
+	// Transaction
+	trackCheckoutStep(stepName, products = []) {
+		return;
+	}
+
+	trackTransaction(transactionId, products = [], totalPrice, totalShipping, totalVat) {
+		return;
+	}
 
 	sendToEndpoint(pl) {
 		fetch(this.endpoint, {
@@ -172,7 +207,7 @@ class Badgr {
 		WSID = (WSID == "") ? WSID = generateRandom(16) : WSID;
 
 		// Set session id for half an hour
-		d.setTime(d.getTime() + (0.5 * 60 * 60 * 1000));
+		d.setTime(d.getTime() + (this.visit_length * 60 * 60 * 1000));
 		var expires = "expires="+d.toUTCString();
 		document.cookie = "WSID=" + WSID + ";" + expires + ";path=/";
 		
