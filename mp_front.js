@@ -44,9 +44,11 @@ class Badgr {
 	}
 
 	// Hit
-	trackEvent(eventName, eventProperties = {}) {
+	trackEvent(eventName = undefined, eventProperties = {}) {
 		var properties = Object.assign({}, eventProperties, this.defaultProperties);
+		properties.hit_id = this.generateRandom(24);
 		var payload = {
+			"track":"event",
 			"event": eventName, 
 			"properties": properties
 		}
@@ -54,50 +56,118 @@ class Badgr {
 		return;
 	}
 
-	trackSearch(searchTerm, searchResults = [], searchProperties = {}) {
+	trackSearch(searchTerm = undefined, searchResults = [], searchProperties = {}) {
+		var properties = Object.assign({}, searchProperties, this.defaultProperties);
+		properties.hit_id = this.generateRandom(24);
+		var payload = {
+			"track":"search",
+			"search_term": SearchTerm,
+			"search_results": searchResults,
+			"hit_properties": properties
+		}
+		this.sendToEndpoint(payload);
 		return;
 	}
 
-	trackMetrics(metrics = {}) {
+	trackMetrics(metrics = {}, metricProperties = {}) {
+		var properties = Object.assign({}, metricProperties, this.defaultProperties);
+		properties.hit_id = this.generateRandom(24);
+		var payload = {
+			"track":"metrics",
+			"metrics": metrics,
+			"hit_properties": properties
+		}
+		this.sendToEndpoint(payload);
 		return;
 	}
 
 	// User
 	enrichUserProperty(userProperties = {}) {
+		var payload = {
+			"track":"enrich_user",
+			"user_properties": userProperties
+		}
+		this.sendToEndpoint(payload);
 		return;
 	}
 	
 	enrichUserPropertyList(listName, listProperties = []) {
+		var payload = {
+			"track": "enrich_user_property_list",
+			"list_name": listName,
+			"user_propertiy_list": listProperties
+		}
+		this.sendToEndpoint(payload);
 		return;
 	}
 
 	// Product
-	trackProductView(productProperies = {}) {
+	#trackProductAction(action = undefined, productProperties = {}) {
+		var properties = Object.assign({}, metricProperties, this.defaultProperties);
+		properties.hit_id = this.generateRandom(24);
+		var payload = {
+			"track": action,
+			"product_properties": productProperties,
+			"hit_properties": properties
+		}
+		this.sendToEndpoint(payload);
 		return;
 	}
 
-	trackProductClick(productProperies = {}) {
+	trackProductView(productProperties = {}) {
+		this.trackProductAction("view", productProperties);
 		return;
 	}
 
-	trackProductCartAdd(productProperies = {}) {
+	trackProductClick(productProperties = {}) {
+		this.trackProductAction("click", productProperties);
 		return;
 	}
 
-	trackProductCartRemove(productProperies = {}) {
+	trackProductCartAdd(productProperties = {}) {
+		this.trackProductAction("cart_add", productProperties);
 		return;
 	}
 
-	trackProductListView(productListName, products = []) {
+	trackProductCartRemove(productProperties = {}) {
+		this.trackProductAction("cart_remove", productProperties)
+		return;
+	}
+
+	trackProductListView(productListName, productListProperties = {}, products = []) {
+		var properties = Object.assign({}, productListProperties, this.defaultProperties);
+		properties.hit_id = this.generateRandom(24);
+		var payload = {
+			"track": "product_list_view",
+			"products": products,
+			"hit_properties": properties
+		}
+		this.sendToEndpoint(payload);
 		return;
 	}
 
 	// Transaction
 	trackCheckoutStep(stepName, products = []) {
+		var properties = Object.assign({}, {}, this.defaultProperties);
+		properties.hit_id = this.generateRandom(24);
+		var payload = {
+			"track": "step",
+			"stepName": products,
+			"hit_properties": properties
+		}
+		this.sendToEndpoint(payload);
 		return;
 	}
 
-	trackTransaction(transactionId, products = [], totalPrice, totalShipping, totalVat) {
+	trackTransaction(transactionId, products = []) {
+		var properties = Object.assign({}, {}, this.defaultProperties);
+		properties.hit_id = this.generateRandom(24);
+		var payload = {
+			"track": "step",
+			"stepName": products,
+			"hit_properties": properties
+		}
+		this.sendToEndpoint(payload);
 		return;
 	}
 
