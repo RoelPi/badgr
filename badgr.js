@@ -54,7 +54,7 @@ class Badgr {
 		var payload = {
 			"track":"event",
 			"event": eventName, 
-			"properties": properties
+			"hit_properties": properties
 		}
 		success = this.sendToEndpoint(payload);
 		return success;
