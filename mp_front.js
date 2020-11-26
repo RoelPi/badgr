@@ -147,8 +147,8 @@ class Badgr {
 	}
 
 	// Transaction
-	trackCheckoutStep(stepName, products = []) {
-		var properties = Object.assign({}, {}, this.defaultProperties);
+	trackCheckoutStep(stepName, stepProperties = {}, products = []) {
+		var properties = Object.assign({}, stepProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
 		var payload = {
 			"track": "step",
@@ -159,11 +159,11 @@ class Badgr {
 		return;
 	}
 
-	trackTransaction(transactionId, products = []) {
-		var properties = Object.assign({}, {}, this.defaultProperties);
+	trackTransaction(transactionId, transactionProperties = {}, products = []) {
+		var properties = Object.assign({}, transactionProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
 		var payload = {
-			"track": "step",
+			"track": "transaction",
 			"stepName": products,
 			"hit_properties": properties
 		}
