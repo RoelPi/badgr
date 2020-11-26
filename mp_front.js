@@ -101,7 +101,7 @@ class Badgr {
 		return;
 	}
 
-	// Product
+	// Product test
 	#trackProductAction(action = undefined, productProperties = {}) {
 		var properties = Object.assign({}, metricProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
