@@ -42,8 +42,12 @@ class Badgr {
 			"cookies": this.getAllCookeis()
 		}
 	}
-
-	// Hit
+	/**
+	 * Tracks an event
+	 * @param  {string}		eventName 			The identifier of the event
+	 * @param  {dict} 		eventProperties 	Properties {property:{string}value} related to the event
+	 * @return {int} 							HTTP status of the call.
+	 */
 	trackEvent(eventName = undefined, eventProperties = {}) {
 		var properties = Object.assign({}, eventProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
@@ -52,11 +56,18 @@ class Badgr {
 			"event": eventName, 
 			"properties": properties
 		}
-		this.sendToEndpoint(payload);
-		return;
+		success = this.sendToEndpoint(payload);
+		return success;
 	}
 
-	trackSearch(searchTerm = undefined, searchResults = [], searchProperties = {}) {
+	/**
+	 * Tracks a search
+	 * @param  {string}		searchTerm 			The search term that the user entered to search
+	 * @param  {dict}		searchProperties	Properties {property:{string}value} related to the search, e.g. if you have multiple search engines
+	 * @param  {list} 		searchResults 		List of key-value dictionaries with all the search results
+	 * @return {int} 							HTTP status of the call.
+	 */
+	trackSearch(searchTerm = undefined, searchProperties = {}, searchResults = []) {
 		var properties = Object.assign({}, searchProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
 		var payload = {
@@ -65,10 +76,15 @@ class Badgr {
 			"search_results": searchResults,
 			"hit_properties": properties
 		}
-		this.sendToEndpoint(payload);
-		return;
+		success = this.sendToEndpoint(payload);
+		return success;
 	}
-
+	/**
+	 * Tracks custom metrics (values that increase or decrease)
+	 * @param  {dict}		metrics 			Metrics {metric:{float}value} that need to decrease or increase
+	 * @param  {dict}		metricProperties	Properties {metric:{string}value} related to the increase or decrease
+	 * @return {int} 							HTTP status of the call.
+	 */
 	trackMetrics(metrics = {}, metricProperties = {}) {
 		var properties = Object.assign({}, metricProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
@@ -77,31 +93,46 @@ class Badgr {
 			"metrics": metrics,
 			"hit_properties": properties
 		}
-		this.sendToEndpoint(payload);
-		return;
+		success = this.sendToEndpoint(payload);
+		return success;
 	}
 
-	// User
-	enrichUserProperty(userProperties = {}) {
+	/**
+	 * Enrich a user profile with custom properties
+	 * @param  {dict}		metricProperties	Properties {metric:{string}value} related to the user
+	 * @return {int} 							HTTP status of the call.
+	 */
+	enrichUserProfile(userProperties = {}) {
 		var payload = {
 			"track":"enrich_user",
 			"user_properties": userProperties
 		}
-		this.sendToEndpoint(payload);
-		return;
+		success = this.sendToEndpoint(payload);
+		return success;
 	}
 	
-	enrichUserPropertyList(listName, listProperties = []) {
+	/**
+	 * Append items to a user profile list (e.g. list of cars a user owns)
+	 * @param  {string}		listName 			The name of the list you want to append items to
+	 * @param  {list}		listItems			List of key-value dictionaries you want to add to the list
+	 * @return {int} 							HTTP status of the call.
+	 */
+	appendUserPropertyList(listName, listItems = []) {
 		var payload = {
-			"track": "enrich_user_property_list",
+			"track": "append_user_property_list",
 			"list_name": listName,
-			"user_propertiy_list": listProperties
+			"user_propertiy_list": listItems
 		}
-		this.sendToEndpoint(payload);
-		return;
+		success = this.sendToEndpoint(payload);
+		return success;
 	}
 
-	// Product test
+	/**
+	 * Tracks a product action
+	 * @param  {string}		action 				What is happening to the product?
+	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
+	 * @return {int} 							HTTP status of the call.
+	 */
 	#trackProductAction(action = undefined, productProperties = {}) {
 		var properties = Object.assign({}, metricProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
@@ -110,31 +141,61 @@ class Badgr {
 			"product_properties": productProperties,
 			"hit_properties": properties
 		}
-		this.sendToEndpoint(payload);
-		return;
+		success = this.sendToEndpoint(payload);
+		return success;
 	}
 
+	/**
+	 * Tracks a product view
+	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
+	 * @return {int} 							HTTP status of the call.
+	 */
 	trackProductView(productProperties = {}) {
 		this.trackProductAction("view", productProperties);
-		return;
+		success = this.sendToEndpoint(payload);
+		return success;
 	}
 
+	/**
+	 * Tracks a product click
+	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
+	 * @return {int} 							HTTP status of the call.
+	 */
 	trackProductClick(productProperties = {}) {
 		this.trackProductAction("click", productProperties);
-		return;
+		success = this.sendToEndpoint(payload);
+		return success;
 	}
 
+	/**
+	 * Tracks a product added to cart
+	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
+	 * @return {int} 							HTTP status of the call.
+	 */
 	trackProductCartAdd(productProperties = {}) {
 		this.trackProductAction("cart_add", productProperties);
-		return;
+		success = this.sendToEndpoint(payload);
+		return success;
 	}
 
+	/**
+	 * Tracks a product removed from cart
+	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
+	 * @return {int} 							HTTP status of the call.
+	 */
 	trackProductCartRemove(productProperties = {}) {
 		this.trackProductAction("cart_remove", productProperties)
-		return;
+		success = this.sendToEndpoint(payload);
+		return success;
 	}
 
-	trackProductListView(productListName, productListProperties = {}, products = []) {
+	/**
+	 * Tracks a product list view
+	 * @param  {string}		productListName 		Which product list is shown? e.g. 'category page'
+	 * @param  {dict}		productListProperties	Properties {property:{string}value} of the product list. e.g. {'category':'chrysler'}
+	 * @return {int} 								HTTP status of the call.
+	 */
+	trackProductListView(productListName = undefined, productListProperties = {}, products = []) {
 		var properties = Object.assign({}, productListProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
 		var payload = {
@@ -143,10 +204,16 @@ class Badgr {
 			"hit_properties": properties
 		}
 		this.sendToEndpoint(payload);
-		return;
+		success = this.sendToEndpoint(payload);
+		return success;
 	}
 
-	// Transaction
+	/**
+	 * Tracks a checkout step
+	 * @param  {string}		stepName 			The name of the step of the checkout. e.g. 'address'
+	 * @param  {dict}		stepProperties		Properties {property:{string}value} of the checkout step. e.g. if you have multiple checkout flows such as pick up
+	 * @return {int} 							HTTP status of the call.
+	 */
 	trackCheckoutStep(stepName, stepProperties = {}, products = []) {
 		var properties = Object.assign({}, stepProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
@@ -156,9 +223,16 @@ class Badgr {
 			"hit_properties": properties
 		}
 		this.sendToEndpoint(payload);
-		return;
+		success = this.sendToEndpoint(payload);
+		return success;
 	}
 
+	/**
+	 * Tracks a transaction
+	 * @param  {string}		transactionId 			The identifier of the transaction.
+	 * @param  {dict}		transactionProperties	Properties {property:{string}value} of the transaction such as {'payment method':'paypal'}
+	 * @return {int} 								HTTP status of the call.
+	 */
 	trackTransaction(transactionId, transactionProperties = {}, products = []) {
 		var properties = Object.assign({}, transactionProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
@@ -168,7 +242,8 @@ class Badgr {
 			"hit_properties": properties
 		}
 		this.sendToEndpoint(payload);
-		return;
+		success = this.sendToEndpoint(payload);
+		return success;
 	}
 
 	sendToEndpoint(pl) {
@@ -181,9 +256,7 @@ class Badgr {
 			body: JSON.stringify(pl)
 		}).then(
 			function(response) {
-				if (response.status !== 200) {
-					return;
-				}
+				return response.status;
 			}
 		)
 	}
