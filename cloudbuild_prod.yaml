@@ -1,0 +1,11 @@
+steps:
+- name: 'gcr.io/cloud-builders/gcloud'
+  args:
+  - functions
+  - deploy
+  - Sett-prod
+  - --source=./sett
+  - --trigger-http
+  - --entry-point=Sett
+  - --runtime=python38
+  - --allow-unauthenticated

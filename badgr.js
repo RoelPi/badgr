@@ -1,8 +1,8 @@
 class Badgr {
-	constructor(endpoint) {
+	constructor(hole) {
 		this.dt = new Date();
 		this.dt_offset = dt.getTimezoneOffset().toString();
-		this.endpoint = endpoint;
+		this.endpoint = hole;
 		this.visit_length = 0.5 // hours
 	}
 

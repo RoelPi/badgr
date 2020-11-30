@@ -1,5 +1,7 @@
 <?php
 
+$sett = 'https://us-central1-roelpeters-blog.cloudfunctions.net/Sett-prod'
+
 function getRealIpAddr() {
 	if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
 		// Check IP from internet.
@@ -15,8 +17,15 @@ function getRealIpAddr() {
 }
 
 $badgr = json_decode(file_get_contents('php://input'), true);
-if (array_key_exists('properties', $badgr) {
-	$badgr['properties']['ip'] = getRealIpAddr();
+if (array_key_exists('hit_properties', $badgr) {
+	$badgr['hit_properties']['ip'] = getRealIpAddr();
 }
 
-?>
+$conn = curl_init($sett);
+curl_setopt($conn, CURLOPT_POSTFIELDS, $badgr);
+curl_setopt($conn, CURLOPT_RETURNTRANSFER, true);
+
+$resp = curl_exec($conn);
+curl_close($conn);
+
+echo $resp;
