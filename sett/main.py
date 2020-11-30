@@ -3,7 +3,7 @@ import requests
 import json
 
 def Sett(request):
-  request_json = request.get_json(silent=True)
+  badgr = request.get_json(silent=True)
 
   #def get_geo(ip):
   #  api_key = '19ab82eab6c0412d8416056d70056015'
@@ -30,7 +30,7 @@ def Sett(request):
 
   bq_client = bigquery.Client.from_service_account_json('creds.json')
   table_id = "roelpeters-blog.web.roelpeters_event_stream"
-  errors = bq_client.insert_rows_json(table_id, [request_json])
+  errors = bq_client.insert_rows_json(table_id, [badgr])
 
   if errors == []:
       print("New rows have been added.")
