@@ -37,4 +37,4 @@ def Sett(request):
   else:
       print("Encountered errors while inserting rows: {}".format(errors))
 
-  return badgr
+  return json.dumps(badgr)
