@@ -5,6 +5,7 @@ import json
 def Sett(request):
   print(request)
   badgr = request.get_json(silent=True)
+  print(badgr)
 
   #def get_geo(ip):
   #  api_key = '19ab82eab6c0412d8416056d70056015'
