@@ -30,7 +30,7 @@ def Sett(request):
 
   bq_client = bigquery.Client.from_service_account_json('creds.json')
   table_id = 'roelpeters-blog.web.badgr_lake'
-  errors = bq_client.insert_rows(table = table_id, rows = [(json.dumps(badgr))], selected_fields = ['event'])
+  errors = bq_client.insert_rows(table = table_id, rows = [(str(json.dumps(badgr)))], selected_fields = ['event'])
 
   if errors == []:
       print("New rows have been added.")
