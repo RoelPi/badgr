@@ -37,4 +37,4 @@ def Sett(request):
   else:
       print("Encountered errors while inserting rows: {}".format(errors))
 
-  return {'status': '200'}
+  return badgr

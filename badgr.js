@@ -1,7 +1,7 @@
 class Badgr {
 	constructor(hole) {
 		this.dt = new Date();
-		this.dt_offset = dt.getTimezoneOffset().toString();
+		this.dt_offset = this.dt.getTimezoneOffset().toString();
 		this.endpoint = hole;
 		this.visit_length = 0.5 // hours
 	}
@@ -56,7 +56,7 @@ class Badgr {
 			"event": eventName, 
 			"hit_properties": properties
 		}
-		success = this.sendToEndpoint(payload);
+		var success = this.sendToEndpoint(payload);
 		return success;
 	}
 
@@ -76,7 +76,7 @@ class Badgr {
 			"search_results": searchResults,
 			"hit_properties": properties
 		}
-		success = this.sendToEndpoint(payload);
+		var success = this.sendToEndpoint(payload);
 		return success;
 	}
 	/**
@@ -93,7 +93,7 @@ class Badgr {
 			"metrics": metrics,
 			"hit_properties": properties
 		}
-		success = this.sendToEndpoint(payload);
+		var success = this.sendToEndpoint(payload);
 		return success;
 	}
 
@@ -107,7 +107,7 @@ class Badgr {
 			"track":"enrich_user",
 			"user_properties": userProperties
 		}
-		success = this.sendToEndpoint(payload);
+		var success = this.sendToEndpoint(payload);
 		return success;
 	}
 	
@@ -141,7 +141,7 @@ class Badgr {
 			"product_properties": productProperties,
 			"hit_properties": properties
 		}
-		success = this.sendToEndpoint(payload);
+		var success = this.sendToEndpoint(payload);
 		return success;
 	}
 
@@ -163,7 +163,7 @@ class Badgr {
 	 */
 	trackProductClick(productProperties = {}) {
 		this.trackProductAction("click", productProperties);
-		success = this.sendToEndpoint(payload);
+		var success = this.sendToEndpoint(payload);
 		return success;
 	}
 
@@ -174,7 +174,7 @@ class Badgr {
 	 */
 	trackProductCartAdd(productProperties = {}) {
 		this.trackProductAction("cart_add", productProperties);
-		success = this.sendToEndpoint(payload);
+		var success = this.sendToEndpoint(payload);
 		return success;
 	}
 
@@ -185,7 +185,7 @@ class Badgr {
 	 */
 	trackProductCartRemove(productProperties = {}) {
 		this.trackProductAction("cart_remove", productProperties)
-		success = this.sendToEndpoint(payload);
+		var success = this.sendToEndpoint(payload);
 		return success;
 	}
 
@@ -204,7 +204,7 @@ class Badgr {
 			"hit_properties": properties
 		}
 		this.sendToEndpoint(payload);
-		success = this.sendToEndpoint(payload);
+		var success = this.sendToEndpoint(payload);
 		return success;
 	}
 
@@ -223,7 +223,7 @@ class Badgr {
 			"hit_properties": properties
 		}
 		this.sendToEndpoint(payload);
-		success = this.sendToEndpoint(payload);
+		var success = this.sendToEndpoint(payload);
 		return success;
 	}
 
@@ -242,7 +242,7 @@ class Badgr {
 			"hit_properties": properties
 		}
 		this.sendToEndpoint(payload);
-		success = this.sendToEndpoint(payload);
+		var success = this.sendToEndpoint(payload);
 		return success;
 	}
 

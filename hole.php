@@ -1,6 +1,6 @@
 <?php
 
-$sett = 'https://us-central1-roelpeters-blog.cloudfunctions.net/Sett-prod'
+$sett = 'https://us-central1-roelpeters-blog.cloudfunctions.net/Sett-prod';
 
 function getRealIpAddr() {
 	if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
@@ -17,12 +17,13 @@ function getRealIpAddr() {
 }
 
 $badgr = json_decode(file_get_contents('php://input'), true);
-if (array_key_exists('hit_properties', $badgr) {
+if (array_key_exists('hit_properties', $badgr)) {
 	$badgr['hit_properties']['ip'] = getRealIpAddr();
 }
 
 $conn = curl_init($sett);
-curl_setopt($conn, CURLOPT_POSTFIELDS, $badgr);
+curl_setopt($conn, CURLOPT_POST, 1);
+curl_setopt($conn, CURLOPT_POSTFIELDS, json_encode($badgr));
 curl_setopt($conn, CURLOPT_RETURNTRANSFER, true);
 
 $resp = curl_exec($conn);
