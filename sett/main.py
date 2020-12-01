@@ -3,9 +3,7 @@ import requests
 import json
 
 def Sett(request):
-  print(request)
   badgr = request.get_json(silent=True)
-  print(badgr)
 
   #def get_geo(ip):
   #  api_key = '19ab82eab6c0412d8416056d70056015'
@@ -39,4 +37,4 @@ def Sett(request):
   else:
       print("Encountered errors while inserting rows: {}".format(errors))
 
-  return json.dumps(badgr)
+  return "Added to."

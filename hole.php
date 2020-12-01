@@ -24,6 +24,7 @@ if (array_key_exists('hit_properties', $badgr)) {
 $conn = curl_init($sett);
 curl_setopt($conn, CURLOPT_POST, 1);
 curl_setopt($conn, CURLOPT_POSTFIELDS, json_encode($badgr));
+curl_setopt($conn, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
 curl_setopt($conn, CURLOPT_RETURNTRANSFER, true);
 
 $resp = curl_exec($conn);

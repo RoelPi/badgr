@@ -9,7 +9,6 @@ class Badgr {
 	init() {
 		this.setInitialReferrer();
 		this.setBrowserProperties();
-
 		this.defaultProperties = {
 			"hit_id": this.generateRandom(24),
 			"user_id": this.setWUID(),
@@ -36,10 +35,10 @@ class Badgr {
 			"utm_term": this.getUrlParameter(window.location.pathname, 'utm_term'),
 			"color_depth": screen.colorDepth.toString(),
 			"browser_language": navigator.language,
-			"timezone_offset": dt_offset,
+			"timezone_offset": this.dt_offset,
 			"user_agent": navigator.userAgent,
 			"queries": this.getAllURLParameters(),
-			"cookies": this.getAllCookeis()
+			"cookies": this.getAllCookies()
 		}
 	}
 	/**
@@ -332,9 +331,9 @@ class Badgr {
 	}
 
 	setWUID() {
-		var WUID = getCookie("WUID");
+		var WUID = this.getCookie("WUID");
 		var d = new Date();
-		WUID = (WUID == "") ? WUID = generateRandom(16) : WUID;
+		WUID = (WUID == "") ? WUID = this.generateRandom(16) : WUID;
 
 		// Set user id for 365 days
 		d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
@@ -345,9 +344,9 @@ class Badgr {
 	}
 
 	setWSID() {
-		var WSID = getCookie("WSID");
+		var WSID = this.getCookie("WSID");
 		var d = new Date();
-		WSID = (WSID == "") ? WSID = generateRandom(16) : WSID;
+		WSID = (WSID == "") ? WSID = this.generateRandom(16) : WSID;
 
 		// Set session id for half an hour
 		d.setTime(d.getTime() + (this.visit_length * 60 * 60 * 1000));
@@ -413,7 +412,7 @@ class Badgr {
 	}
 
 	getDeviceCategory() {
-		ua = navigator.userAgent;
+		var ua = navigator.userAgent;
 		if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
 			return "tablet";
 		}
@@ -434,7 +433,7 @@ class Badgr {
 			}
 		}
 		
-		cookiesJSON = [];
+		var cookiesJSON = [];
 		for (var name in cookies) {
 			cookiesJSON.push({"cookieName": name, "cookieValue": cookies[name]})
 		}
@@ -449,7 +448,7 @@ class Badgr {
 	}
 
 	getAllURLParameters(params) {
-		searchParams = new URLSearchParams(params);
+		var searchParams = new URLSearchParams(params);
 		var paramsJSON = [];
 		for(var pair of searchParams.entries()) {
 			if (!(pair[0] in ['utm_source', 'utm_medium','utm_campaign','utm_content','utm_term'])) {
