@@ -29,8 +29,8 @@ def Sett(request):
   #  request_json['geo'] = geo_dict
 
   bq_client = bigquery.Client.from_service_account_json('creds.json')
-  table_id = "roelpeters-blog.web.roelpeters_event_stream"
-  errors = bq_client.insert_rows_json(table_id, [badgr])
+  table_id = "roelpeters-blog.web.badgr-lake"
+  errors = bq_client.insert_rows(table_id, [('event',json.dumps(badgr))])
 
   if errors == []:
       print("New rows have been added.")
