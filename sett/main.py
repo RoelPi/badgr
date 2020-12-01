@@ -3,6 +3,7 @@ import requests
 import json
 
 def Sett(request):
+  print(request)
   badgr = request.get_json(silent=True)
 
   #def get_geo(ip):
