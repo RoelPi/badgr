@@ -39,9 +39,7 @@ class Badgr {
 			"timezone_offset": this.dt_offset,
 			"user_agent": navigator.userAgent,
 			"queries": this.getAllURLParameters(),
-			"cookies": this.getAllCookies(),
-			"local_load_date": this.getDate(this.dt),
-			"local_load_time": this.getDateTime(this.dt)
+			"cookies": this.getAllCookies()
 		}
 	}
 	/**

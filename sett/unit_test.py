@@ -9,8 +9,8 @@ def test_Sett():
         'track': 'event',
         'event': 'test',
         'hit_properties': {'test': 'true'},
-        'destinations': ['bq'],
-        'environment': 'staging'
+        'destinations': ['my_bq'],
+        'environment': 'production'
     }
     req = Mock(get_json=Mock(return_value=data), args=data)
 
