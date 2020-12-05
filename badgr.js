@@ -1,5 +1,6 @@
 class Badgr {
-	constructor(hole) {
+	constructor(environment = "production", hole) {
+		this.environment = environment;
 		this.dt = new Date();
 		this.dt_offset = this.dt.getTimezoneOffset().toString();
 		this.endpoint = hole;
@@ -38,22 +39,27 @@ class Badgr {
 			"timezone_offset": this.dt_offset,
 			"user_agent": navigator.userAgent,
 			"queries": this.getAllURLParameters(),
-			"cookies": this.getAllCookies()
+			"cookies": this.getAllCookies(),
+			"local_load_date": this.getDate(this.dt),
+			"local_load_time": this.getDateTime(this.dt)
 		}
 	}
 	/**
 	 * Tracks an event
 	 * @param  {string}		eventName 			The identifier of the event
 	 * @param  {dict} 		eventProperties 	Properties {property:{string}value} related to the event
+	 * @param  {list}		destinations		The destinations of the event
 	 * @return {int} 							HTTP status of the call.
 	 */
-	trackEvent(eventName = undefined, eventProperties = {}) {
+	trackEvent(eventName = undefined, eventProperties = {}, destinations = []) {
 		var properties = Object.assign({}, eventProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
+		properties.local_hit_time = this.getDateTime();
 		var payload = {
 			"track":"event",
 			"event": eventName, 
-			"hit_properties": properties
+			"hit_properties": properties,
+			"destinations": [destinations]
 		}
 		var success = this.sendToEndpoint(payload);
 		return success;
@@ -66,14 +72,16 @@ class Badgr {
 	 * @param  {list} 		searchResults 		List of key-value dictionaries with all the search results
 	 * @return {int} 							HTTP status of the call.
 	 */
-	trackSearch(searchTerm = undefined, searchProperties = {}, searchResults = []) {
+	trackSearch(searchTerm = undefined, searchProperties = {}, searchResults = [], destinations = []) {
 		var properties = Object.assign({}, searchProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
+		properties.local_hit_time = this.getDateTime();
 		var payload = {
 			"track":"search",
 			"search_term": SearchTerm,
 			"search_results": searchResults,
-			"hit_properties": properties
+			"hit_properties": properties,
+			"destinations": [destinations]
 		}
 		var success = this.sendToEndpoint(payload);
 		return success;
@@ -84,13 +92,15 @@ class Badgr {
 	 * @param  {dict}		metricProperties	Properties {metric:{string}value} related to the increase or decrease
 	 * @return {int} 							HTTP status of the call.
 	 */
-	trackMetrics(metrics = {}, metricProperties = {}) {
+	trackMetrics(metrics = {}, metricProperties = {}, destinations = []) {
 		var properties = Object.assign({}, metricProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
+		properties.local_hit_time = this.getDateTime();
 		var payload = {
 			"track":"metrics",
 			"metrics": metrics,
-			"hit_properties": properties
+			"hit_properties": properties,
+			"destinations": [destinations]
 		}
 		var success = this.sendToEndpoint(payload);
 		return success;
@@ -101,10 +111,11 @@ class Badgr {
 	 * @param  {dict}		metricProperties	Properties {metric:{string}value} related to the user
 	 * @return {int} 							HTTP status of the call.
 	 */
-	enrichUserProfile(userProperties = {}) {
+	enrichUserProfile(userProperties = {}, destinations = []) {
 		var payload = {
 			"track":"enrich_user",
-			"user_properties": userProperties
+			"user_properties": userProperties,
+			"destinations": [destinations]
 		}
 		var success = this.sendToEndpoint(payload);
 		return success;
@@ -116,11 +127,12 @@ class Badgr {
 	 * @param  {list}		listItems			List of key-value dictionaries you want to add to the list
 	 * @return {int} 							HTTP status of the call.
 	 */
-	appendUserPropertyList(listName, listItems = []) {
+	appendUserPropertyList(listName, listItems = [], destinations = []) {
 		var payload = {
 			"track": "append_user_property_list",
 			"list_name": listName,
-			"user_propertiy_list": listItems
+			"user_property_list": listItems,
+			"destinations": [destinations]
 		}
 		success = this.sendToEndpoint(payload);
 		return success;
@@ -132,13 +144,15 @@ class Badgr {
 	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
 	 * @return {int} 							HTTP status of the call.
 	 */
-	#trackProductAction(action = undefined, productProperties = {}) {
+	#trackProductAction(action = undefined, productProperties = {}, destinations = []) {
 		var properties = Object.assign({}, metricProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
+		properties.local_hit_time = this.getDateTime();
 		var payload = {
 			"track": action,
 			"product_properties": productProperties,
-			"hit_properties": properties
+			"hit_properties": properties,
+			"destinations": [destinations]
 		}
 		var success = this.sendToEndpoint(payload);
 		return success;
@@ -149,8 +163,8 @@ class Badgr {
 	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
 	 * @return {int} 							HTTP status of the call.
 	 */
-	trackProductView(productProperties = {}) {
-		this.trackProductAction("view", productProperties);
+	trackProductView(productProperties = {}, destinations = []) {
+		this.trackProductAction("view", productProperties, destinations);
 		success = this.sendToEndpoint(payload);
 		return success;
 	}
@@ -160,8 +174,8 @@ class Badgr {
 	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
 	 * @return {int} 							HTTP status of the call.
 	 */
-	trackProductClick(productProperties = {}) {
-		this.trackProductAction("click", productProperties);
+	trackProductClick(productProperties = {}, destinations = []) {
+		this.trackProductAction("click", productProperties, destinations);
 		var success = this.sendToEndpoint(payload);
 		return success;
 	}
@@ -171,8 +185,8 @@ class Badgr {
 	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
 	 * @return {int} 							HTTP status of the call.
 	 */
-	trackProductCartAdd(productProperties = {}) {
-		this.trackProductAction("cart_add", productProperties);
+	trackProductCartAdd(productProperties = {}, destinations = []) {
+		this.trackProductAction("cart_add", productProperties, destinations);
 		var success = this.sendToEndpoint(payload);
 		return success;
 	}
@@ -182,8 +196,8 @@ class Badgr {
 	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
 	 * @return {int} 							HTTP status of the call.
 	 */
-	trackProductCartRemove(productProperties = {}) {
-		this.trackProductAction("cart_remove", productProperties)
+	trackProductCartRemove(productProperties = {}, destinations = []) {
+		this.trackProductAction("cart_remove", productProperties, destinations)
 		var success = this.sendToEndpoint(payload);
 		return success;
 	}
@@ -194,13 +208,15 @@ class Badgr {
 	 * @param  {dict}		productListProperties	Properties {property:{string}value} of the product list. e.g. {'category':'chrysler'}
 	 * @return {int} 								HTTP status of the call.
 	 */
-	trackProductListView(productListName = undefined, productListProperties = {}, products = []) {
+	trackProductListView(productListName = undefined, productListProperties = {}, products = [], destinations = []) {
 		var properties = Object.assign({}, productListProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
+		properties.local_hit_time = this.getDateTime();
 		var payload = {
 			"track": "product_list_view",
 			"products": products,
-			"hit_properties": properties
+			"hit_properties": properties,
+			"destinations": [destinations]
 		}
 		this.sendToEndpoint(payload);
 		var success = this.sendToEndpoint(payload);
@@ -213,13 +229,15 @@ class Badgr {
 	 * @param  {dict}		stepProperties		Properties {property:{string}value} of the checkout step. e.g. if you have multiple checkout flows such as pick up
 	 * @return {int} 							HTTP status of the call.
 	 */
-	trackCheckoutStep(stepName, stepProperties = {}, products = []) {
+	trackCheckoutStep(stepName, stepProperties = {}, products = [], destinations = []) {
 		var properties = Object.assign({}, stepProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
+		properties.local_hit_time = this.getDateTime();
 		var payload = {
 			"track": "step",
 			"stepName": products,
-			"hit_properties": properties
+			"hit_properties": properties,
+			"destinations": [destinations]
 		}
 		this.sendToEndpoint(payload);
 		var success = this.sendToEndpoint(payload);
@@ -232,13 +250,15 @@ class Badgr {
 	 * @param  {dict}		transactionProperties	Properties {property:{string}value} of the transaction such as {'payment method':'paypal'}
 	 * @return {int} 								HTTP status of the call.
 	 */
-	trackTransaction(transactionId, transactionProperties = {}, products = []) {
+	trackTransaction(transactionId, transactionProperties = {}, products = [], destinations = []) {
 		var properties = Object.assign({}, transactionProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
+		properties.local_hit_time = this.getDateTime();
 		var payload = {
 			"track": "transaction",
 			"stepName": products,
-			"hit_properties": properties
+			"hit_properties": properties,
+			"destinations": [destinations]
 		}
 		this.sendToEndpoint(payload);
 		var success = this.sendToEndpoint(payload);
@@ -246,6 +266,7 @@ class Badgr {
 	}
 
 	sendToEndpoint(pl) {
+		pl.environment = this.environment;
 		fetch(this.endpoint, {
 			method: 'post',
 			headers: {
@@ -456,6 +477,19 @@ class Badgr {
 			}
 		}
 		return paramsJSON;
+	}
+
+	getDate(dateObj = new Date()) {
+		var dd = String(dateObj.getDate()).padStart(2, '0');
+		var mm = String(dateObj.getMonth() + 1).padStart(2, '0'); //January is 0!
+		var yyyy = dateObj.getFullYear();
+
+		dateStr = yyyy + '-' + mm + '-' + dd;
+		return dateStr
+	}
+
+	getDateTime(dateObj = new Date()) {
+		return dateObj.format("isoDateTime");
 	}
 
 	getCookie(cname) {
