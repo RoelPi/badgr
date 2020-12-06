@@ -1,6 +1,5 @@
 class Chamber:
-    def __new__(cls, *kwargs):
-        return None
+
 
     def __init__(self, settings = {}):
         pass

@@ -3,28 +3,19 @@ import json
 
 import chamber
 
-class Chamber(chamber.Chamber):
-    def __new__(cls, settings = {}):
-        if 'token' not in settings:
-            return None
+class mp(chamber.Chamber):
 
-        instance = super(Chamber, cls).__new__(cls)
-        return instance
 
     def __init__(self, settings = {}):
         if 'api_host' not in settings:
-            self.mp_client = mixpanel.Mixpanel(
+            self.mp_client = Mixpanel(
                 settings['token']
             )
         else:
-            self.mp_client = mixpanel.Mixpanel(
+            self.mp_client = Mixpanel(
                 settings['token'],
                 consumer = mixpanel.Consumer(api_host = settings['api_host'])
         )
-
-        self.mapped_events = {
-            'event': lambda badgr : trackEvent(badgr)
-        }
 
     def __mapProperties(self, props):
         mapped_props = {
@@ -102,7 +93,8 @@ class Chamber(chamber.Chamber):
         pass
 
     def send(self, badgr):
-        print(badgr['track'])
-        self.mapped_events[badgr['track']](badgr)
+        {
+            'event': lambda badgr : self.trackEvent(badgr)
+        }[badgr['track']](badgr)
         return True
          

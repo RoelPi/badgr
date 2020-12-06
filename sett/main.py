@@ -21,10 +21,9 @@ def Sett(request):
     for chamber_type_name, chambers_settings in sett_configuration.items():
         chamber_type = importlib.import_module('chamber_' + chamber_type_name)
         for chamber_name, chamber_settings in chambers_settings.items():
-            chambers[chamber_name] = chamber_type.Chamber(chamber_settings)
-            
+            chambers[chamber_name] = getattr(chamber_type, chamber_type_name)(chamber_settings)
+            print(chambers[chamber_name])
 
-    
     badgr = request.get_json(silent=True)
 
     # Append processing time to hit properties
@@ -37,9 +36,7 @@ def Sett(request):
 
     sent_to = []
     for destination in badgr['destinations']:
-        print(chambers[destination])
         if chambers[destination] is not None:
-
             if chambers[destination].send(badgr):
                 sent_to.append(destination)
 
