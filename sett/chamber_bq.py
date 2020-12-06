@@ -1,12 +1,14 @@
 from google.cloud import bigquery
 import json
 
-class bq:
+import chamber
+
+class Chamber(chamber.Chamber):
     def __new__(cls, settings = {}):
         if 'creds_filename' not in settings or 'table_id' not in settings:
             return None
 
-        instance = super(bq, cls).__new__(cls)
+        instance = super(Chamber, cls).__new__(cls)
         return instance
 
     def __init__(self, settings = {}):

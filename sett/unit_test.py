@@ -9,7 +9,7 @@ def test_Sett():
         'track': 'event',
         'event': 'test',
         'hit_properties': {'test': 'true'},
-        'destinations': ['my_bq'],
+        'destinations': ['my_bq','my_mp'],
         'environment': 'production'
     }
     req = Mock(get_json=Mock(return_value=data), args=data)
