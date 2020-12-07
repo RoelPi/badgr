@@ -57,7 +57,7 @@ class Badgr {
 			"track":"event",
 			"event": eventName, 
 			"hit_properties": properties,
-			"destinations": [destinations]
+			"destinations": destinations
 		}
 		var success = this.sendToEndpoint(payload);
 		return success;
@@ -79,7 +79,7 @@ class Badgr {
 			"search_term": SearchTerm,
 			"search_results": searchResults,
 			"hit_properties": properties,
-			"destinations": [destinations]
+			"destinations": destinations
 		}
 		var success = this.sendToEndpoint(payload);
 		return success;
@@ -98,7 +98,7 @@ class Badgr {
 			"track":"metrics",
 			"metrics": metrics,
 			"hit_properties": properties,
-			"destinations": [destinations]
+			"destinations": destinations
 		}
 		var success = this.sendToEndpoint(payload);
 		return success;
@@ -113,7 +113,7 @@ class Badgr {
 		var payload = {
 			"track":"enrich_user",
 			"user_properties": userProperties,
-			"destinations": [destinations]
+			"destinations": destinations
 		}
 		var success = this.sendToEndpoint(payload);
 		return success;
@@ -130,7 +130,7 @@ class Badgr {
 			"track": "append_user_property_list",
 			"list_name": listName,
 			"user_property_list": listItems,
-			"destinations": [destinations]
+			"destinations": destinations
 		}
 		success = this.sendToEndpoint(payload);
 		return success;
@@ -150,7 +150,7 @@ class Badgr {
 			"track": action,
 			"product_properties": productProperties,
 			"hit_properties": properties,
-			"destinations": [destinations]
+			"destinations": destinations
 		}
 		var success = this.sendToEndpoint(payload);
 		return success;
@@ -214,7 +214,7 @@ class Badgr {
 			"track": "product_list_view",
 			"products": products,
 			"hit_properties": properties,
-			"destinations": [destinations]
+			"destinations": destinations
 		}
 		this.sendToEndpoint(payload);
 		var success = this.sendToEndpoint(payload);
@@ -235,7 +235,7 @@ class Badgr {
 			"track": "step",
 			"stepName": products,
 			"hit_properties": properties,
-			"destinations": [destinations]
+			"destinations": destinations
 		}
 		this.sendToEndpoint(payload);
 		var success = this.sendToEndpoint(payload);
@@ -256,7 +256,7 @@ class Badgr {
 			"track": "transaction",
 			"stepName": products,
 			"hit_properties": properties,
-			"destinations": [destinations]
+			"destinations": destinations
 		}
 		this.sendToEndpoint(payload);
 		var success = this.sendToEndpoint(payload);
@@ -477,7 +477,10 @@ class Badgr {
 		return paramsJSON;
 	}
 
-	getDate(dateObj = new Date()) {
+	getDate(dateObj = undefined) {
+		if (dateObj == undefined) {
+			dateObj = new Date();
+		}
 		var dd = String(dateObj.getDate()).padStart(2, '0');
 		var mm = String(dateObj.getMonth() + 1).padStart(2, '0'); //January is 0!
 		var yyyy = dateObj.getFullYear();
@@ -486,8 +489,12 @@ class Badgr {
 		return dateStr
 	}
 
-	getDateTime(dateObj = new Date()) {
-		return dateObj.format("isoDateTime");
+	getDateTime(dateObj = undefined) {
+		if (dateObj == undefined) {
+			dateObj = new Date();
+		}
+		console.log(dateObj.toISOString());
+		return dateObj.toISOString();
 	}
 
 	getCookie(cname) {

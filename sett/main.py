@@ -1,6 +1,7 @@
 import requests
 import importlib
 import time
+import json
 
 sett_configuration = {
     'bq': {
@@ -55,5 +56,4 @@ def Sett(request):
         if chambers[destination] is not None:
             if chambers[destination].send(badgr):
                 sent_to.append(destination)
-
-    return sent_to
+    return json.dumps(sent_to), 200, {'ContentType': 'application/json'}
