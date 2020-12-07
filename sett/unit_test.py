@@ -15,6 +15,6 @@ def test_Sett():
     req = Mock(get_json=Mock(return_value=data), args=data)
 
     # Call tested function
-    assert main.Sett(req) == data['destinations']
+    assert main.Sett(req) == ('["my_bq", "my_mp"]', 200, {'ContentType': 'application/json'})
 
 test_Sett()
