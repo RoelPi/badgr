@@ -6,7 +6,7 @@ import chamber
 class mp(chamber.Chamber):
 
 
-    def __init__(self, settings = {}):
+    def __init__(self, settings = {}, name = 'unspecified_name'):
         if 'api_host' not in settings:
             self.mp_client = Mixpanel(
                 settings['token']
@@ -16,6 +16,7 @@ class mp(chamber.Chamber):
                 settings['token'],
                 consumer = mixpanel.Consumer(api_host = settings['api_host'])
         )
+        self.name = name
 
     def __mapProperties(self, props):
         mapped_props = {
@@ -41,7 +42,7 @@ class mp(chamber.Chamber):
             'utm_content': props['utm_content'],
             'utm_term': props['utm_term'],
             'Color Depth': props['color_depth'],
-            'Browser Language': props['browser language'],
+            'Browser Language': props['browser_language'],
             'Timezone Offset': props['timezone_offset'],
             'User Agent': props['user_agent'],
             'Protocol': props['protocol'],
@@ -55,8 +56,8 @@ class mp(chamber.Chamber):
         self.mp_client.track(
             badgr['hit_properties']['user_id'],
             badgr['event'],
-            __mapProperties(badgr['hit_properties']))
-        print('Event sent to MP.')
+            self.__mapProperties(badgr['hit_properties']))
+        print('Badger has entered chamber: ' + str(self.name) + '.')
         pass
 
     def trackSearch():

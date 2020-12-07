@@ -17,20 +17,36 @@ sett_configuration = {
 }
 
 def Sett(request):
+    badgr = request.get_json(silent=True)
+    if 'hit_properties' in badgr:
+        # Enrich hit properties with timestamp
+        badgr['hit_properties']['processing_timestamp'] = time.time()
+
+        # Validate fields
+        fields = ['browser','browser_version','device','user_id', \
+            'current_url','initial_referrer','initial_referring_domain', \
+            'screen_height','screen_width','referring_search_engine', \
+            'os','referrer','referring_domain','query_string','hit_id', \
+            'visit_id','utm_campaign','utm_source','utm_medium','utm_content', \
+            'utm_term','color_depth','browser_language','timezone_offset', \
+            'user_agent', 'protocol', 'page_title', 'hostname']
+        for field in fields:
+            if field not in badgr['hit_properties']:
+                badgr['hit_properties'][field] = 'unspecified'
+        
+        # Validate arrays
+        if 'cookies' not in badgr['hit_properties']:
+            badgr['hit_properties']['cookies'] = {}
+        if 'queries' not in badgr['hit_properties']:
+            badgr['hit_properties']['queries'] = {}
+        
     chambers = {}
     for chamber_type_name, chambers_settings in sett_configuration.items():
         chamber_type = importlib.import_module('chamber_' + chamber_type_name)
         for chamber_name, chamber_settings in chambers_settings.items():
-            chambers[chamber_name] = getattr(chamber_type, chamber_type_name)(chamber_settings)
-            print(chambers[chamber_name])
+            chambers[chamber_name] = getattr(chamber_type, chamber_type_name)(chamber_settings, chamber_name)
 
-    badgr = request.get_json(silent=True)
-
-    # Append processing time to hit properties
-    if 'hit_properties' in badgr:
-        processing_timestamp = time.time()
-        badgr['hit_properties']['processing_timestamp'] = processing_timestamp
-
+    
     if badgr['environment'] == 'staging':
         return badgr['destinations']
 
