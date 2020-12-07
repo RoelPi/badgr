@@ -2,6 +2,8 @@ import requests
 import importlib
 import time
 import json
+from mixpanel import Mixpanel
+from google.cloud import bigquery
 
 sett_configuration = {
     'bq': {
