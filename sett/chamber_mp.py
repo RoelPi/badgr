@@ -95,7 +95,7 @@ class mp(chamber.Chamber):
 
     def send(self, badgr):
         {
-            'event': lambda badgr : self.trackEvent(badgr)
-        }[badgr['track']](badgr)
+            'event': self.trackEvent(badgr)
+        }[badgr['track']]
         return True
          
