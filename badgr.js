@@ -23,6 +23,7 @@ class Badgr {
 			"referring_search_engine": localStorage.getItem('search_engine'),
 			"os": this.getOS(),
 			"referrer": document.referrer,
+			"referring_domain": this.extractHostname(document.referrer),
 			"screen_height": screen.height,
 			"screen_width": screen.width,
 			"query_string": window.location.search,
@@ -216,7 +217,6 @@ class Badgr {
 			"hit_properties": properties,
 			"destinations": destinations
 		}
-		this.sendToEndpoint(payload);
 		var success = this.sendToEndpoint(payload);
 		return success;
 	}
@@ -237,7 +237,6 @@ class Badgr {
 			"hit_properties": properties,
 			"destinations": destinations
 		}
-		this.sendToEndpoint(payload);
 		var success = this.sendToEndpoint(payload);
 		return success;
 	}
@@ -258,7 +257,6 @@ class Badgr {
 			"hit_properties": properties,
 			"destinations": destinations
 		}
-		this.sendToEndpoint(payload);
 		var success = this.sendToEndpoint(payload);
 		return success;
 	}
@@ -493,7 +491,6 @@ class Badgr {
 		if (dateObj == undefined) {
 			dateObj = new Date();
 		}
-		console.log(dateObj.toISOString());
 		return dateObj.toISOString();
 	}
 
