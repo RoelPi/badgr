@@ -149,7 +149,7 @@ class mp(chamber.Chamber):
     def trackTransaction(self):
         self.badgr['hit_properties']['Transaction ID'] = self.badgr['transaction_id']
         self.badgr['hit_properties']['Transaction Value'] = self.badgr['transaction_value']
-        self.badgr['hit_properties']['VAT'] = badgr['transaction_vat']
+        self.badgr['hit_properties']['VAT'] = self.badgr['transaction_vat']
         self.mp_client.track(
             self.badgr['hit_properties']['$user_id'],
             'Transaction',
@@ -175,7 +175,7 @@ class mp(chamber.Chamber):
             'product_list_view': 'trackProductListView',
             'step': 'trackCheckoutStep',
             'transaction': 'trackTransaction'
-        }[self.badgr['track']])
+        }[self.badgr['track']])()
         print('Badger has entered chamber: ' + str(self.name) + '.')
         return True
          

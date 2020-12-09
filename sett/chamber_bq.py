@@ -14,7 +14,7 @@ class bq(chamber.Chamber):
 
     def send(self):
         errors = []
-        errors = self.bq_client.insert_rows_json(self.table_id, [{'event': json.dumps(self.badgr)}])
+        # errors = self.bq_client.insert_rows_json(self.table_id, [{'event': json.dumps(self.badgr)}])
         if errors == []:
             print("Badger has entered chamber: " + str(self.name) + ".")
             return True
