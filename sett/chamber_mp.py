@@ -6,7 +6,8 @@ import chamber
 class mp(chamber.Chamber):
 
 
-    def __init__(self, settings = {}, name = 'unspecified_name'):
+    def __init__(self, settings = {}, badgr = {}, name = 'unspecified_name'):
+        # Create Mixpanel client
         if 'api_host' not in settings:
             self.mp_client = Mixpanel(
                 settings['token']
@@ -16,170 +17,165 @@ class mp(chamber.Chamber):
                 settings['token'],
                 consumer = mixpanel.Consumer(api_host = settings['api_host'])
         )
-        self.name = name
 
-    def __mapProperties(self, props):
-        mapped_props = {
-            '$browser': props['browser'],
-            '$browser_version': props['browser_version'],
-            '$device': props['device'],
-            '$user_id': props['user_id'],
-            '$current_url': props['current_url'],
-            '$initial_referrer': props['initial_referrer'],
-            '$initial_referring_domain': props['initial_referring_domain'],
-            '$screen_height': props['screen_height'],
-            '$screen_width': props['screen_width'],
-            '$search_engine': props['referring_search_engine'],
-            '$os': props['os'],
-            '$referrer': props['referrer'],
-            '$referring_domain': props['referring_domain'],
-            '$ip': props['ip'],
-            'Query String': props['query_string'],
-            'hit_id': props['hit_id'],
-            'visit_id': props['visit_id'],
-            'utm_campaign': props['utm_campaign'],
-            'utm_source': props['utm_source'],
-            'utm_medium': props['utm_medium'],
-            'utm_content': props['utm_content'],
-            'utm_term': props['utm_term'],
-            'Color Depth': props['color_depth'],
-            'Browser Language': props['browser_language'],
-            'Timezone Offset': props['timezone_offset'],
-            'User Agent': props['user_agent'],
-            'Protocol': props['protocol'],
-            'Page Title': props['page_title'],
-            'Hostname': props['hostname']
-        }
-        return mapped_props
+        # Map properties
+        if 'hit_properties' in badgr:
+            super().__init__(badgr, name)
+            props = badgr['hit_properties']
+            custom_props = {}
+            for prop in props:
+                if prop not in self.default_hit_props:
+                    custom_props[prop] = props[prop]
+            mapped_props = {
+                '$browser': props['browser'],
+                '$browser_version': props['browser_version'],
+                '$device': props['device'],
+                '$user_id': props['user_id'],
+                '$current_url': props['current_url'],
+                '$initial_referrer': props['initial_referrer'],
+                '$initial_referring_domain': props['initial_referring_domain'],
+                '$screen_height': props['screen_height'],
+                '$screen_width': props['screen_width'],
+                '$search_engine': props['referring_search_engine'],
+                '$os': props['os'],
+                '$referrer': props['referrer'],
+                '$referring_domain': props['referring_domain'],
+                '$ip': props['ip'],
+                'Query String': props['query_string'],
+                'hit_id': props['hit_id'],
+                'visit_id': props['visit_id'],
+                'utm_campaign': props['utm_campaign'],
+                'utm_source': props['utm_source'],
+                'utm_medium': props['utm_medium'],
+                'utm_content': props['utm_content'],
+                'utm_term': props['utm_term'],
+                'Color Depth': props['color_depth'],
+                'Browser Language': props['browser_language'],
+                'Timezone Offset': props['timezone_offset'],
+                'User Agent': props['user_agent'],
+                'Protocol': props['protocol'],
+                'Page Title': props['page_title'],
+                'Hostname': props['hostname']
+            }
+            self.badgr['hit_properties'] = {**custom_props, **mapped_props}      
 
-
-    def trackEvent(self, badgr):
+    def trackEvent(self):
         self.mp_client.track(
-            badgr['hit_properties']['user_id'],
-            badgr['event'],
-            self.__mapProperties(badgr['hit_properties']))
-        print('Badger has entered chamber: ' + str(self.name) + '.')
-        pass
-
-    def trackSearch(self, badgr):
-        self.mp_client.track(
-            badgr['hit_properties']['user_id'],
-            badgr['event'],
-            self.__mapProperties(badgr['hit_properties'])
-        print('Badger has entered chamber: ' + str(self.name) + '.')
-
+            self.badgr['hit_properties']['$user_id'],
+            self.badgr['event'],
+            self.badgr['hit_properties']
         )
-        pass
+        return
 
-    def trackMetrics(self, badgr):
+    def trackSearch(self):
+        self.mp_client.track(
+            self.badgr['hit_properties']['$user_id'],
+            self.badgr['event'],
+            self.badgr['hit_properties']
+        )
+        return
+
+    def trackMetrics(self):
         self.mp_client.people_increment(
-            badgr['hit_properties']['user_id'],
-            badgr['metrics']
+            self.badgr['hit_properties']['$user_id'],
+            self.badgr['metrics']
         )
-        print('Badger has entered chamber: ' + str(self.name) + '.')
-        pass
+        return
 
-    def enrichUserProfile(self, badgr):
+    def enrichUserProfile(self):
         self.mp_client.people_set(
-            badgr['hit_properties']['user_id'],
-            badgr['user_properties']
+            self.badgr['hit_properties']['$user_id'],
+            self.badgr['user_properties']
         )
-        print('Badger has entered chamber: ' + str(self.name) + '.')
-        pass
+        return
 
-    def appendUserPropertyList(self, badgr):
+    def appendUserPropertyList(self):
         self.mp_client.people_set(
-            badgr['hit_properties']['user_id'],
-            badgr['user_property_list']
+            self.badgr['hit_properties']['$user_id'],
+            self.badgr['user_property_list']
         )
-        print('Badger has entered chamber: ' + str(self.name) + '.')
-        pass
+        return
 
-    def trackProductView(self, badgr):
+    def trackProductView(self):
         self.mp_client.track(
-            badgr['hit_properties']['user_id'],
+            self.badgr['hit_properties']['$user_id'],
             'Product View',
-            badgr['product_properties'])
-        print('Badger has entered chamber: ' + str(self.name) + '.')
-        pass
+            self.badgr['product_properties']
+        )
+        return
 
-    def trackProductClick(self, badgr):
+    def trackProductClick(self):
         self.mp_client.track(
-            badgr['hit_properties']['user_id'],
+            self.badgr['hit_properties']['$user_id'],
             'Product Click',
-            badgr['product_properties']
+            self.badgr['product_properties']
         )
-        print('Badger has entered chamber: ' + str(self.name) + '.')
-        pass
+        return
 
-    def trackProductCartAdd(self, badgr):
+    def trackProductCartAdd(self):
         self.mp_client.track(
-            badgr['hit_properties']['user_id'],
+            self.badgr['hit_properties']['$user_id'],
             'Add To Cart',
-            badgr['product_properties']
+            self.badgr['product_properties']
         )
-        print('Badger has entered chamber: ' + str(self.name) + '.')
-        pass
+        return
 
 
-    def trackProductCartRemove(self, badgr):
+    def trackProductCartRemove(self):
         self.mp_client.track(
-            badgr['hit_properties']['user_id'],
+            self.badgr['hit_properties']['$user_id'],
             'Remove From Cart',
-            badgr['product_properties']
+            self.badgr['product_properties']
         )
-        print('Badger has entered chamber: ' + str(self.name) + '.')
-        pass
+        return
 
-    def trackProductListView(self, badgr):
+    def trackProductListView(self):
         self.mp_client.track(
-            badgr['hit_properties']['user_id'],
+            self.badgr['hit_properties']['$user_id'],
             'Product List View',
-            {'Product List Name': badgr['product_list_name']}
+            {'Product List Name': self.badgr['product_list_name']}
         )
-        print('Badger has entered chamber: ' + str(self.name) + '.')
-        pass
+        return
 
-    def trackCheckoutStep(self, badgr):
-        badgr['hit_properties']['Checkout Step'] = badgr['step_name']
+    def trackCheckoutStep(self):
+        self.badgr['hit_properties']['Checkout Step'] = self.badgr['step_name']
         self.mp_client.track(
-            badgr['hit_properties']['user_id'],
+            self.badgr['hit_properties']['$user_id'],
             'Checkout Step',
-            badgr['hit_properties']
+            self.badgr['hit_properties']
         )
-        print('Badger has entered chamber: ' + str(self.name) + '.')
-        pass
+        return
 
-    def trackTransaction(self, badgr):
-        badgr['hit_properties']['Transaction ID'] = badgr['transaction_id']
-        badgr['hit_properties']['Transaction Value'] = badgr['transaction_value']
-        badgr['hit_properties']['VAT'] = badgr['transaction_vat']
+    def trackTransaction(self):
+        self.badgr['hit_properties']['Transaction ID'] = self.badgr['transaction_id']
+        self.badgr['hit_properties']['Transaction Value'] = self.badgr['transaction_value']
+        self.badgr['hit_properties']['VAT'] = badgr['transaction_vat']
         self.mp_client.track(
-            badgr['hit_properties']['user_id'],
+            self.badgr['hit_properties']['$user_id'],
             'Transaction',
-            badgr['hit_properties']
+            self.badgr['hit_properties']
         )
         self.mp_client.people_track_charge(
-            badgr['hit_properties']['user_id'],
-            badgr['transaction_value']
+            self.badgr['hit_properties']['$user_id'],
+            self.badgr['transaction_value']
         )
-        print('Badger has entered chamber: ' + str(self.name) + '.')
-        pass
+        return
 
-    def send(self, badgr):
-        {
-            'event': self.trackEvent(badgr),
-            'search': self.trackSearch(badgr),
-            'metrics': self.trackMetrics(badgr),
-            'enrich_user': self.enrichUserProfile(badgr),
-            'user_property_list': self.appendUserPropertyList(badgr),
-            'product_view': self.trackProductView(badgr),
-            'product_click': self.trackProductClick(badgr),
-            'cart_add': self.trackProductCartAdd(badgr),
-            'cart_remove': self.trackProductCartRemove(badgr),
-            'product_list_view': self.trackProductListView(badgr),
-            'step': self.trackStep(badgr),
-            'transaction': self.trackTransaction(badgr)
-        }[badgr['track']]
+    def send(self):
+        getattr(self,{
+            'event': 'trackEvent',
+            'search': 'trackSearch',
+            'metrics': 'trackMetrics',
+            'enrich_user': 'enrichUserProfile',
+            'append_user_property_list': 'appendUserPropertyList',
+            'product_view': 'trackProductView',
+            'product_click': 'trackProductClick',
+            'cart_add': 'trackProductCartAdd',
+            'cart_remove': 'trackProductCartRemove',
+            'product_list_view': 'trackProductListView',
+            'step': 'trackCheckoutStep',
+            'transaction': 'trackTransaction'
+        }[self.badgr['track']])
+        print('Badger has entered chamber: ' + str(self.name) + '.')
         return True
          

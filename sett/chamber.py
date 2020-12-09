@@ -1,8 +1,29 @@
 class Chamber:
 
 
-    def __init__(self, settings = {}):
-        pass
+    def __init__(self, badgr = {}, name = 'unspecified_name'):
+        self.name = name
+        self.badgr = badgr
+
+        # Validate default hit properties
+        self.default_hit_props = ['browser','browser_version','device','user_id', \
+            'current_url','initial_referrer','initial_referring_domain', \
+            'screen_height','screen_width','referring_search_engine', \
+            'os','referrer','referring_domain','query_string','hit_id', \
+            'visit_id','utm_campaign','utm_source','utm_medium','utm_content', \
+            'utm_term','color_depth','browser_language','timezone_offset', \
+            'user_agent', 'protocol', 'page_title', 'hostname','ip']
+        for default_hit_prop in self.default_hit_props:
+            if default_hit_prop not in badgr['hit_properties']:
+                badgr['hit_properties'][default_hit_prop] = 'unspecified'
+        
+        # Validate default hit lists
+        default_dicts = ['cookies','queries']
+        for default_dict in default_dicts:
+            if default_dict not in self.badgr['hit_properties']:
+                self.badgr['hit_properties'][default_dict] = {}
+
+
 
     def trackEvent(self, badgr):
         return "This method is not supported."
@@ -29,7 +50,7 @@ class Chamber:
     def trackTransaction(self, badgr):
         return "This method is not supported."
     def send(self, badgr):
-                {
+        {
             'event': None,
             'search': None,
             'metrics': None,
