@@ -34,7 +34,7 @@ class mp(chamber.Chamber):
             '$referrer': props['referrer'],
             '$referring_domain': props['referring_domain'],
             '$ip': props['ip'],
-            'query_string': props['query_string'],
+            'Query String': props['query_string'],
             'hit_id': props['hit_id'],
             'visit_id': props['visit_id'],
             'utm_campaign': props['utm_campaign'],
@@ -61,60 +61,125 @@ class mp(chamber.Chamber):
         print('Badger has entered chamber: ' + str(self.name) + '.')
         pass
 
-    def trackSearch():
+    def trackSearch(self, badgr):
         self.mp_client.track(
             badgr['hit_properties']['user_id'],
             badgr['event'],
             self.__mapProperties(badgr['hit_properties'])
+        print('Badger has entered chamber: ' + str(self.name) + '.')
+
         )
         pass
 
-    def trackMetrics():
+    def trackMetrics(self, badgr):
         self.mp_client.people_increment(
             badgr['hit_properties']['user_id'],
             badgr['metrics']
         )
+        print('Badger has entered chamber: ' + str(self.name) + '.')
         pass
 
-    def enrichUserProfile():
+    def enrichUserProfile(self, badgr):
         self.mp_client.people_set(
             badgr['hit_properties']['user_id'],
             badgr['user_properties']
         )
+        print('Badger has entered chamber: ' + str(self.name) + '.')
         pass
 
-    def appendUserPropertyList():
+    def appendUserPropertyList(self, badgr):
         self.mp_client.people_set(
             badgr['hit_properties']['user_id'],
             badgr['user_property_list']
         )
+        print('Badger has entered chamber: ' + str(self.name) + '.')
         pass
 
-    def trackProductView():
+    def trackProductView(self, badgr):
+        self.mp_client.track(
+            badgr['hit_properties']['user_id'],
+            'Product View',
+            badgr['product_properties'])
+        print('Badger has entered chamber: ' + str(self.name) + '.')
         pass
 
-    def trackProductClick():
+    def trackProductClick(self, badgr):
+        self.mp_client.track(
+            badgr['hit_properties']['user_id'],
+            'Product Click',
+            badgr['product_properties']
+        )
+        print('Badger has entered chamber: ' + str(self.name) + '.')
         pass
 
-    def trackProductCartAdd():
+    def trackProductCartAdd(self, badgr):
+        self.mp_client.track(
+            badgr['hit_properties']['user_id'],
+            'Add To Cart',
+            badgr['product_properties']
+        )
+        print('Badger has entered chamber: ' + str(self.name) + '.')
         pass
 
-    def trackProductCartRemove():
+
+    def trackProductCartRemove(self, badgr):
+        self.mp_client.track(
+            badgr['hit_properties']['user_id'],
+            'Remove From Cart',
+            badgr['product_properties']
+        )
+        print('Badger has entered chamber: ' + str(self.name) + '.')
         pass
 
-    def trackProductListView():
+    def trackProductListView(self, badgr):
+        self.mp_client.track(
+            badgr['hit_properties']['user_id'],
+            'Product List View',
+            {'Product List Name': badgr['product_list_name']}
+        )
+        print('Badger has entered chamber: ' + str(self.name) + '.')
         pass
 
-    def trackCheckoutStep():
+    def trackCheckoutStep(self, badgr):
+        badgr['hit_properties']['Checkout Step'] = badgr['step_name']
+        self.mp_client.track(
+            badgr['hit_properties']['user_id'],
+            'Checkout Step',
+            badgr['hit_properties']
+        )
+        print('Badger has entered chamber: ' + str(self.name) + '.')
         pass
 
-    def trackTransaction():
+    def trackTransaction(self, badgr):
+        badgr['hit_properties']['Transaction ID'] = badgr['transaction_id']
+        badgr['hit_properties']['Transaction Value'] = badgr['transaction_value']
+        badgr['hit_properties']['VAT'] = badgr['transaction_vat']
+        self.mp_client.track(
+            badgr['hit_properties']['user_id'],
+            'Transaction',
+            badgr['hit_properties']
+        )
+        self.mp_client.people_track_charge(
+            badgr['hit_properties']['user_id'],
+            badgr['transaction_value']
+        )
+        print('Badger has entered chamber: ' + str(self.name) + '.')
         pass
 
     def send(self, badgr):
         {
             'event': self.trackEvent(badgr),
-            'search': self.trackSearch(badgr)
+            'search': self.trackSearch(badgr),
+            'metrics': self.trackMetrics(badgr),
+            'enrich_user': self.enrichUserProfile(badgr),
+            'user_property_list': self.appendUserPropertyList(badgr),
+            'product_view': self.trackProductView(badgr),
+            'product_click': self.trackProductClick(badgr),
+            'cart_add': self.trackProductCartAdd(badgr),
+            'cart_remove': self.trackProductCartRemove(badgr),
+            'product_list_view': self.trackProductListView(badgr),
+            'step': self.trackStep(badgr),
+            'transaction': self.trackTransaction(badgr)
         }[badgr['track']]
         return True
          

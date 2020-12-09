@@ -162,7 +162,7 @@ class Badgr {
 	 * @return {int} 							HTTP status of the call.
 	 */
 	trackProductView(productProperties = {}, destinations = []) {
-		this.trackProductAction("view", productProperties, destinations);
+		this.trackProductAction("product_view", productProperties, destinations);
 		success = this.sendToEndpoint(payload);
 		return success;
 	}
@@ -173,7 +173,7 @@ class Badgr {
 	 * @return {int} 							HTTP status of the call.
 	 */
 	trackProductClick(productProperties = {}, destinations = []) {
-		this.trackProductAction("click", productProperties, destinations);
+		this.trackProductAction("product_click", productProperties, destinations);
 		var success = this.sendToEndpoint(payload);
 		return success;
 	}
@@ -212,6 +212,7 @@ class Badgr {
 		properties.local_hit_time = this.getDateTime();
 		var payload = {
 			"track": "product_list_view",
+			"product_list_name": productListName,
 			"products": products,
 			"hit_properties": properties,
 			"destinations": destinations
@@ -232,7 +233,8 @@ class Badgr {
 		properties.local_hit_time = this.getDateTime();
 		var payload = {
 			"track": "step",
-			"stepName": products,
+			"step_name": stepName,
+			"products": products,
 			"hit_properties": properties,
 			"destinations": destinations
 		}
@@ -243,16 +245,21 @@ class Badgr {
 	/**
 	 * Tracks a transaction
 	 * @param  {string}		transactionId 			The identifier of the transaction.
+	 * @param  {int}		transactionValue		The value of the transaction
+	 * @param  {int}		transactionVATValue
 	 * @param  {dict}		transactionProperties	Properties {property:{string}value} of the transaction such as {'payment method':'paypal'}
 	 * @return {int} 								HTTP status of the call.
 	 */
-	trackTransaction(transactionId, transactionProperties = {}, products = [], destinations = []) {
+	trackTransaction(transactionId, transactionValue = 0, transactionProperties = {}, products = [], destinations = []) {
 		var properties = Object.assign({}, transactionProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
 		properties.local_hit_time = this.getDateTime();
 		var payload = {
 			"track": "transaction",
-			"stepName": products,
+			"transaction_id": transactionId,
+			"transaction_value": transactionValue,
+			"transaction_vat": transactionVAT,
+			"products": products,
 			"hit_properties": properties,
 			"destinations": destinations
 		}
