@@ -123,13 +123,12 @@ class Badgr {
 	/**
 	 * Append items to a user profile list (e.g. list of cars a user owns)
 	 * @param  {string}		listName 			The name of the list you want to append items to
-	 * @param  {list}		listItems			List of key-value dictionaries you want to add to the list
+	 * @param  {list}		listItems			List of key-value dictionaries you want to add to a list (key = list)
 	 * @return {int} 							HTTP status of the call.
 	 */
 	appendUserPropertyList(listName, listItems = [], destinations = []) {
 		var payload = {
 			"track": "append_user_property_list",
-			"list_name": listName,
 			"user_property_list": listItems,
 			"destinations": destinations
 		}

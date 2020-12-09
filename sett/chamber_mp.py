@@ -33,6 +33,7 @@ class mp(chamber.Chamber):
             '$os': props['os'],
             '$referrer': props['referrer'],
             '$referring_domain': props['referring_domain'],
+            '$ip': props['ip'],
             'query_string': props['query_string'],
             'hit_id': props['hit_id'],
             'visit_id': props['visit_id'],
@@ -61,15 +62,32 @@ class mp(chamber.Chamber):
         pass
 
     def trackSearch():
+        self.mp_client.track(
+            badgr['hit_properties']['user_id'],
+            badgr['event'],
+            self.__mapProperties(badgr['hit_properties'])
+        )
         pass
 
     def trackMetrics():
+        self.mp_client.people_increment(
+            badgr['hit_properties']['user_id'],
+            badgr['metrics']
+        )
         pass
 
     def enrichUserProfile():
+        self.mp_client.people_set(
+            badgr['hit_properties']['user_id'],
+            badgr['user_properties']
+        )
         pass
 
     def appendUserPropertyList():
+        self.mp_client.people_set(
+            badgr['hit_properties']['user_id'],
+            badgr['user_property_list']
+        )
         pass
 
     def trackProductView():
@@ -95,7 +113,8 @@ class mp(chamber.Chamber):
 
     def send(self, badgr):
         {
-            'event': self.trackEvent(badgr)
+            'event': self.trackEvent(badgr),
+            'search': self.trackSearch(badgr)
         }[badgr['track']]
         return True
          

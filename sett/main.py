@@ -30,7 +30,7 @@ def Sett(request):
             'os','referrer','referring_domain','query_string','hit_id', \
             'visit_id','utm_campaign','utm_source','utm_medium','utm_content', \
             'utm_term','color_depth','browser_language','timezone_offset', \
-            'user_agent', 'protocol', 'page_title', 'hostname']
+            'user_agent', 'protocol', 'page_title', 'hostname','ip']
         for field in fields:
             if field not in badgr['hit_properties']:
                 badgr['hit_properties'][field] = 'unspecified'
