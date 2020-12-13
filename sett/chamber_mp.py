@@ -40,7 +40,7 @@ class mp(chamber.Chamber):
                 '$os': props['os'],
                 '$referrer': props['referrer'],
                 '$referring_domain': props['referring_domain'],
-                '$ip': props['ip'],
+                'ip': props['ip'],
                 'Query String': props['query_string'],
                 'hit_id': props['hit_id'],
                 'visit_id': props['visit_id'],
