@@ -293,9 +293,12 @@ class Badgr {
 	isDefined(property) {
 		return typeof property !== 'undefined';
 	}
+	isString(property) {
+		return typeof property === 'string' || property instanceof String;
+	}
 
 	setInitialReferrer() {
-		referrer = this.getReferrer();
+		var referrer = this.getReferrer();
 		if (!referrer.includes(window.location.hostname)) {
 			// Set initial referrer
 			localStorage.setItem('initial_referrer', referrer)
@@ -343,18 +346,18 @@ class Badgr {
 	}
 
 	getTouchpoints() {
-		return isDefined(navigator.maxTouchPoints) ? navigator.maxTouchPoints.toString() : '0';
+		return this.isDefined(navigator.maxTouchPoints) ? navigator.maxTouchPoints.toString() : '0';
 	}
 
 	getHardwareConcurrency() {
-		return isDefined(navigator.hardwareConcurrency) ? navigator.hardwareConcurrency.toString() : '0';
+		return this.isDefined(navigator.hardwareConcurrency) ? navigator.hardwareConcurrency.toString() : '0';
 	}
 
 	getDeviceMemory() {
-		return isDefined(navigator.deviceMemory) ? navigator.deviceMemory.toString() : '0';
+		return this.isDefined(navigator.deviceMemory) ? navigator.deviceMemory.toString() : '0';
 	}
 	getBrowserLanguages() {
-		return isDefined(navigator.languages) ? navigator.languages.toString() : navigator.language;
+		return this.isDefined(navigator.languages) ? navigator.languages.toString() : navigator.language;
 	}
 
 	getReferrer() {
@@ -384,10 +387,10 @@ class Badgr {
 	}
 
 	getJavaEnabled() {
-		if ((new RegExp('Edge[ /](\\d+[\\.\\d]+)')).test(navigatorAlias.userAgent)) {
+		if ((new RegExp('Edge[ /](\\d+[\\.\\d]+)')).test(navigator.userAgent)) {
 			return 'Java Enabled By Default'
 		}
-		if 	(typeof navigator.javaEnabled !== 'unknown' && this.isDefined(navigatorAlias.javaEnabled) && navigatorAlias.javaEnabled()) {
+		if 	(typeof navigator.javaEnabled !== 'unknown' && this.isDefined(navigator.javaEnabled) && navigator.javaEnabled()) {
 			return 'Java Enabled';
 		} else {
 			return 'Java Not Enabled'
@@ -395,12 +398,12 @@ class Badgr {
 	}
 
 	getTitle() {
-		title = document.title;
+		var title = document.title;
 		title = title && title.text ? title.text : title;
 
-		if (!isString(title)) {
+		if (!this.isString(title)) {
 			var tmp = document.getElementsByTagName('title');
-			if (tmp && isDefined(tmp[0])) {
+			if (tmp && this.isDefined(tmp[0])) {
 				title = tmp[0].text;
 			}
 		}
