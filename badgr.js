@@ -22,12 +22,12 @@ class Badgr {
 			"initial_referring_domain": localStorage.getItem('initial_referring_domain'),
 			"referring_search_engine": localStorage.getItem('search_engine'),
 			"os": this.getOS(),
-			"referrer": document.referrer,
+			"referrer": this.getReferrer(),
 			"referring_domain": this.extractHostname(document.referrer),
 			"screen_height": screen.height,
 			"screen_width": screen.width,
 			"query_string": window.location.search,
-			"page_title": document.title,
+			"page_title": this.getTitle(),
 			"protocol": window.location.protocol,
 			"hostname": window.location.host,
 			"utm_campaign": this.getUrlParameter(window.location.pathname, 'utm_campaign'),
@@ -37,8 +37,15 @@ class Badgr {
 			"utm_term": this.getUrlParameter(window.location.pathname, 'utm_term'),
 			"color_depth": screen.colorDepth.toString(),
 			"browser_language": navigator.language,
+			"browser_languages": this.getBrowserLanguages(),
 			"timezone_offset": this.dt_offset,
 			"user_agent": navigator.userAgent,
+			"navigator_platform": navigator.platform,
+			"n_touchpoints": this.getTouchpoints(),
+			"device_memory": this.getDeviceMemory(),
+			"hardware_concurrency": this.getHardwareConcurrency(),
+			"is_java": this.getJavaEnabled(),
+			"is_cookie": this.getCookieEnabled(),
 			"queries": this.getAllURLParameters(),
 			"cookies": this.getAllCookies()
 		}
@@ -142,7 +149,7 @@ class Badgr {
 	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
 	 * @return {int} 							HTTP status of the call.
 	 */
-	#trackProductAction(action = undefined, productProperties = {}, destinations = []) {
+	trackProductAction(action = undefined, productProperties = {}, destinations = []) {
 		var properties = Object.assign({}, metricProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
 		properties.local_hit_time = this.getDateTime();
@@ -283,41 +290,46 @@ class Badgr {
 		)
 	}
 
+	isDefined(property) {
+		return typeof property !== 'undefined';
+	}
+
 	setInitialReferrer() {
-		if (!document.referrer.includes(window.location.hostname)) {
+		referrer = this.getReferrer();
+		if (!referrer.includes(window.location.hostname)) {
 			// Set initial referrer
-			localStorage.setItem('initial_referrer', document.referrer)
+			localStorage.setItem('initial_referrer', referrer)
 			// Set referring domain
-			localStorage.setItem('initial_referring_domain', this.extractHostname(document.referrer))
+			localStorage.setItem('initial_referring_domain', this.extractHostname(referrer))
 
 			// Set search engine
-			if (document.referrer.includes('google')) {
+			if (referrer.includes('google')) {
 				localStorage.setItem('search_engine','Google')
-			} else if (document.referrer.includes('bing')) {
+			} else if (referrer.includes('bing')) {
 				localStorage.setItem('search_engine', 'Bing')
-			} else if (document.referrer.includes('yandex')) {
+			} else if (referrer.includes('yandex')) {
 				localStorage.setItem('search_engine', 'Yandex')
-			} else if (document.referrer.includes('swisscows')) {
+			} else if (referrer.includes('swisscows')) {
 				localStorage.setItem('search_engine', 'Swisscows')
-			} else if (document.referrer.includes('duckduckgo')) {
+			} else if (referrer.includes('duckduckgo')) {
 				localStorage.setItem('search_engine', 'DuckDuckGo')
-			} else if (document.referrer.includes('startpage')) {
+			} else if (referrer.includes('startpage')) {
 				localStorage.setItem('search_engine', 'Startpage')
-			} else if (document.referrer.includes('searchencrypt')) {
+			} else if (referrer.includes('searchencrypt')) {
 				localStorage.setItem('search_engine', 'Search Encrypt')
-			} else if (document.referrer.includes('gibiru')) {
+			} else if (referrer.includes('gibiru')) {
 				localStorage.setItem('search_engine', 'Gibiru')
-			} else if (document.referrer.includes('onesearch')) {
+			} else if (referrer.includes('onesearch')) {
 				localStorage.setItem('search_engine', 'OneSearch')
-			} else if (document.referrer.includes('yahoo')) {
+			} else if (referrer.includes('yahoo')) {
 				localStorage.setItem('search_engine', 'Yahoo')
-			} else if (document.referrer.includes('givewater')) {
+			} else if (referrer.includes('givewater')) {
 				localStorage.setItem('search_engine', 'giveWater')
-			} else if (document.referrer.includes('ekoru')) {
+			} else if (referrer.includes('ekoru')) {
 				localStorage.setItem('search_engine', 'Ekoru')
-			} else if (document.referrer.includes('ecosia')) {
+			} else if (referrer.includes('ecosia')) {
 				localStorage.setItem('search_engine', 'Ecosia')
-			} else if (document.referrer.includes('boardreader')) {
+			} else if (referrer.includes('boardreader')) {
 				localStorage.setItem('search_engine', 'Boardreader')
 			} else {
 				localStorage.setItem('search_engine', 'none')
@@ -328,6 +340,71 @@ class Badgr {
 		this.initialReferringDomain = localStorage.getItem('initial_referring_domain');
 		this.searchEngine = localStorage.getItem('search_engine');
 
+	}
+
+	getTouchpoints() {
+		return isDefined(navigator.maxTouchPoints) ? navigator.maxTouchPoints.toString() : '0';
+	}
+
+	getHardwareConcurrency() {
+		return isDefined(navigator.hardwareConcurrency) ? navigator.hardwareConcurrency.toString() : '0';
+	}
+
+	getDeviceMemory() {
+		return isDefined(navigator.deviceMemory) ? navigator.deviceMemory.toString() : '0';
+	}
+	getBrowserLanguages() {
+		return isDefined(navigator.languages) ? navigator.languages.toString() : navigator.language;
+	}
+
+	getReferrer() {
+		var referrer = "";
+
+		try {
+			referrer = window.top.document.referrer;
+		} catch (e) {
+			if (window.parent) {
+				try {
+					referrer = window.parent.document.referrer;
+				} catch (e2) {
+					referrer = "";
+				}
+			}
+		}
+
+		if (referrer === "") {
+			referrer = document.referrer;
+		}
+
+		return referrer;
+	}
+
+	getCookieEnabled() {
+		return navigator.cookieEnabled ? "Cookies Enabled" : "Cookies Not Enabled";
+	}
+
+	getJavaEnabled() {
+		if ((new RegExp('Edge[ /](\\d+[\\.\\d]+)')).test(navigatorAlias.userAgent)) {
+			return 'Java Enabled By Default'
+		}
+		if 	(typeof navigator.javaEnabled !== 'unknown' && this.isDefined(navigatorAlias.javaEnabled) && navigatorAlias.javaEnabled()) {
+			return 'Java Enabled';
+		} else {
+			return 'Java Not Enabled'
+		}
+	}
+
+	getTitle() {
+		title = document.title;
+		title = title && title.text ? title.text : title;
+
+		if (!isString(title)) {
+			var tmp = document.getElementsByTagName('title');
+			if (tmp && isDefined(tmp[0])) {
+				title = tmp[0].text;
+			}
+		}
+		return title;
 	}
 
 	extractHostname(url) {
