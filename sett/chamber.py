@@ -6,7 +6,7 @@ class Chamber:
         self.badgr = badgr
 
         # Validate default hit properties
-        self.default_hit_props = ['browser','browser_version','device','user_id', \
+        self.default_hit_props = ['browser_name','browser_version','device','user_id', \
             'current_url','initial_referrer','initial_referring_domain', \
             'screen_height','screen_width','referring_search_engine', \
             'os','referrer','referring_domain','query_string','hit_id', \
@@ -14,7 +14,7 @@ class Chamber:
             'utm_term','color_depth','browser_language','timezone_offset', \
             'user_agent', 'protocol', 'page_title', 'hostname','ip']
         for default_hit_prop in self.default_hit_props:
-            if default_hit_prop not in badgr['hit_properties']:
+            if default_hit_prop not in self.badgr['hit_properties']:
                 badgr['hit_properties'][default_hit_prop] = 'unspecified'
         
         # Validate default hit lists

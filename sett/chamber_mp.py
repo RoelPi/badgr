@@ -27,7 +27,7 @@ class mp(chamber.Chamber):
                 if prop not in self.default_hit_props:
                     custom_props[prop] = props[prop]
             mapped_props = {
-                '$browser': props['browser'],
+                '$browser': props['browser_name'],
                 '$browser_version': props['browser_version'],
                 '$device': props['device'],
                 '$user_id': props['user_id'],

@@ -19,9 +19,14 @@ sett_configuration = {
 
 def Sett(request):
     badgr = request.get_json(silent=True)
-    if 'hit_properties' in badgr:
-        # Enrich hit properties with timestamp
-        badgr['hit_properties']['processing_timestamp'] = time.time()
+    if 'destinations' not in badgr:
+        print('No destinations provided.')
+        return json.dumps({}), 200, {'ContentType': 'application/json'}
+
+    if 'hit_properties' not in badgr:
+         badgr['hit_properties'] = {}
+
+    badgr['hit_properties']['processing_timestamp'] = time.time()
         
     chambers = {}
     for chamber_type_name, chambers_settings in sett_configuration.items():
