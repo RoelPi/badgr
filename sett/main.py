@@ -30,6 +30,8 @@ def Sett(request):
         
     chambers = {}
     for chamber_type_name, chambers_settings in sett_configuration.items():
+        if len(list(set(badgr['destinations']) & chambers_settings.keys())) <= 0:
+            continue
         chamber_type = importlib.import_module('chamber_' + chamber_type_name)
         for chamber_name, chamber_settings in chambers_settings.items():
             chambers[chamber_name] = getattr(chamber_type, chamber_type_name)(chamber_settings, badgr, chamber_name)
