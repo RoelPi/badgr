@@ -334,6 +334,8 @@ class Badgr {
 				localStorage.setItem('search_engine', 'Ecosia')
 			} else if (referrer.includes('boardreader')) {
 				localStorage.setItem('search_engine', 'Boardreader')
+			} else if (referrer.includes('qwant')) {
+				localStorage.setItem('search_engine', 'Qwant')
 			} else {
 				localStorage.setItem('search_engine', 'none')
 			}
@@ -360,27 +362,7 @@ class Badgr {
 		return this.isDefined(navigator.languages) ? navigator.languages.toString() : navigator.language;
 	}
 
-	getReferrer() {
-		var referrer = "";
 
-		try {
-			referrer = window.top.document.referrer;
-		} catch (e) {
-			if (window.parent) {
-				try {
-					referrer = window.parent.document.referrer;
-				} catch (e2) {
-					referrer = "";
-				}
-			}
-		}
-
-		if (referrer === "") {
-			referrer = document.referrer;
-		}
-
-		return referrer;
-	}
 
 	getCookieEnabled() {
 		return navigator.cookieEnabled ? "Cookies Enabled" : "Cookies Not Enabled";
