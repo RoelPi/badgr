@@ -62,6 +62,48 @@ window.badgr = (function() {
 		return referrer;
     }
 
+    const getDate = function(dateObj = undefined) {
+		if (dateObj == undefined) {
+			dateObj = new Date();
+		}
+		var dd = String(dateObj.getDate()).padStart(2, '0');
+		var mm = String(dateObj.getMonth() + 1).padStart(2, '0'); //January is 0!
+		var yyyy = dateObj.getFullYear();
+
+		dateStr = yyyy + '-' + mm + '-' + dd;
+		return dateStr
+	}
+
+	const getDateTime = function(dateObj = undefined) {
+		if (dateObj == undefined) {
+			dateObj = new Date();
+		}
+		return dateObj.toISOString();
+	}
+
+	const getCookie = function(cname) {
+		var name = cname + "=";
+		var decodedCookie = decodeURIComponent(document.cookie);
+		var ca = decodedCookie.split(';');
+		for (var i = 0; i < ca.length; i++) {
+			var c = ca[i];
+			while (c.charAt(0) == ' ') {
+				c = c.substring(1);
+			}
+			if (c.indexOf(name) == 0) {
+				return c.substring(name.length, c.length);
+			}
+		}
+		return "";
+	}
+
+    const getUrlParameter = function(url, name) {
+		var regexSearch = "[\\?&#]" + name + "=([^&#]*)";
+		var regex = new RegExp(regexSearch);
+		var results = regex.exec(url);
+		return results ? decodeWrapper(results[1]) : '';
+	}
+
     /* Get Referrers
     /**************************************/
     const referrer = getReferrer();
@@ -111,6 +153,12 @@ window.badgr = (function() {
     const initialReferringDomain = localStorage.getItem('initial_referring_domain');
     const searchEngine = localStorage.getItem('search_engine');
 
+    var OSName = "Unknown OS";
+    if (n.appVersion.indexOf("Win") != -1) OSName = "Windows";
+    if (n.appVersion.indexOf("Mac") != -1) OSName = "MacOS";
+    if (n.appVersion.indexOf("X11") != -1) OSName = "UNIX";
+    if (n.appVersion.indexOf("Linux") != -1) OSName = "Linux";
+
     /* Get Title 
     /**************************************/
     const title = (function() {
@@ -131,6 +179,14 @@ window.badgr = (function() {
     const touchpoints = isDefined(n.maxTouchPoints) ? n.maxTouchPoints.toString() : '0';
 	const hardwareConcurrency = isDefined(n.hardwareConcurrency) ? n.hardwareConcurrency.toString() : '0';
     const deviceMemory = isDefined(n.deviceMemory) ? n.deviceMemory.toString() : '0';
+
+    var device = "desktop";
+    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(n.userAgent)) {
+        device = "tablet";
+    }
+    if (/Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(n.userAgent)) {
+        device = "mobile";
+    }
 
     /* Get Browser Properties
     /**************************************/
@@ -187,20 +243,6 @@ window.badgr = (function() {
 
     if ((tempVersion = browserVersion.indexOf(" ")) != -1) {
         browserVersion = browserVersion.substring(0, tempVersion);
-    }
-
-    var OSName = "Unknown OS";
-    if (n.appVersion.indexOf("Win") != -1) OSName = "Windows";
-    if (n.appVersion.indexOf("Mac") != -1) OSName = "MacOS";
-    if (n.appVersion.indexOf("X11") != -1) OSName = "UNIX";
-    if (n.appVersion.indexOf("Linux") != -1) OSName = "Linux";
-
-    var device = "desktop";
-    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(n.userAgent)) {
-        device = "tablet";
-    }
-    if (/Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(n.userAgent)) {
-        device = "mobile";
     }
     
     return badgr
