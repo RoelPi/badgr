@@ -386,7 +386,7 @@ window.badgr = (function() {
     const paramContent = getUrlParameter(href, 'utm_content');
     const paramTerm = getUrlParameter(href, 'utm_term');
 
-    const urlParams = (function() {
+    const urlParams = function() {
 		var searchParams = new URLSearchParams(queryString);
 		var paramsJSON = [];
 		for(var pair of searchParams.entries()) {
@@ -395,7 +395,7 @@ window.badgr = (function() {
 			}
 		}
 		return paramsJSON;
-	})()
+	}
 
     /* Get Title 
     /**************************************/
@@ -489,7 +489,7 @@ window.badgr = (function() {
     }
     majorVersion = majorVersion.toString();
 
-    var cookies = (function() {
+    var getCookies = function() {
 		var cookies = {};
 		if (document.cookie && document.cookie != '') {
 			var split = document.cookie.split(';');
@@ -505,7 +505,7 @@ window.badgr = (function() {
 			cookiesJSON.push({"cookieName": name, "cookieValue": cookies[name]})
 		}
 		return cookiesJSON;
-    })()
+    }
     
     /* Identification
     /**************************************/
@@ -554,8 +554,8 @@ window.badgr = (function() {
             "hardware_concurrency": hardwareConcurrency,
             "is_java": javaEnabled,
             "is_cookie": cookiesEnabled,
-            "queries": urlParams,
-            "cookies": cookies
+            "queries": urlParams(),
+            "cookies": getCookies()
         }
     }
 
@@ -574,10 +574,226 @@ window.badgr = (function() {
 			"hit_properties": properties,
 			"destinations": destinations
         }
-        console.log(payload);
+		var success = toHole(payload);
+		return success;
+    }
+    
+    /**
+	 * Tracks a search
+	 * @param  {string}		searchTerm 			The search term that the user entered to search
+	 * @param  {dict}		searchProperties	Properties {property:{string}value} related to the search, e.g. if you have multiple search engines
+	 * @param  {list} 		searchResults 		List of key-value dictionaries with all the search results
+	 * @return {int} 							HTTP status of the call.
+	 */
+	const trackSearch = function(searchTerm = undefined, searchProperties = {}, searchResults = [], destinations = []) {
+		var properties = Object.assign({}, searchProperties, this.defaultProperties);
+		properties.hit_id = this.generateRandom(24);
+		properties.local_hit_time = this.getDateTime();
+		var payload = {
+			"track":"search",
+			"search_term": SearchTerm,
+			"search_results": searchResults,
+			"hit_properties": properties,
+			"destinations": destinations
+		}
+		var success = this.sendToEndpoint(payload);
+		return success;
+    }
+
+    /**
+	 * Tracks custom metrics (values that increase or decrease)
+	 * @param  {dict}		metrics 			Metrics {metric:{float}value} that need to decrease or increase
+	 * @param  {dict}		metricProperties	Properties {metric:{string}value} related to the increase or decrease
+	 * @return {int} 							HTTP status of the call.
+	 */
+	const trackMetrics = function(metrics = {}, metricProperties = {}, destinations = []) {
+		var properties = Object.assign({}, metricProperties, this.defaultProperties);
+		properties.hit_id = this.generateRandom(24);
+		properties.local_hit_time = this.getDateTime();
+		var payload = {
+			"track":"metrics",
+			"metrics": metrics,
+			"hit_properties": properties,
+			"destinations": destinations
+		}
+		var success = this.sendToEndpoint(payload);
+		return success;
+	}
+
+    /**
+	 * Enrich a user profile with custom properties
+	 * @param  {dict}		metricProperties	Properties {metric:{string}value} related to the user
+	 * @return {int} 							HTTP status of the call.
+	 */
+	const enrichUserProfile = function(userProperties = {}, destinations = []) {
+		var payload = {
+			"track":"enrich_user",
+			"user_properties": userProperties,
+			"destinations": destinations
+		}
+		var success = this.sendToEndpoint(payload);
+		return success;
+    }
+    
+    /**
+	 * Append items to a user profile list (e.g. list of cars a user owns)
+	 * @param  {string}		listName 			The name of the list you want to append items to
+	 * @param  {list}		listItems			List of key-value dictionaries you want to add to a list (key = list)
+	 * @return {int} 							HTTP status of the call.
+	 */
+	const appendUserPropertyList = function(listName, listItems = [], destinations = []) {
+		var payload = {
+			"track": "append_user_property_list",
+			"user_property_list": listItems,
+			"destinations": destinations
+		}
+		success = this.sendToEndpoint(payload);
+		return success;
+    }
+    
+    /**
+	 * Tracks a product action
+	 * @param  {string}		action 				What is happening to the product?
+	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
+	 * @return {int} 							HTTP status of the call.
+	 */
+	const trackProductAction = function(action = undefined, productProperties = {}, destinations = []) {
+		var properties = Object.assign({}, metricProperties, this.defaultProperties);
+		properties.hit_id = this.generateRandom(24);
+		properties.local_hit_time = this.getDateTime();
+		var payload = {
+			"track": action,
+			"product_properties": productProperties,
+			"hit_properties": properties,
+			"destinations": destinations
+		}
+		var success = this.sendToEndpoint(payload);
+		return success;
+    }
+
+    /**
+	 * Tracks a product view
+	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
+	 * @return {int} 							HTTP status of the call.
+	 */
+	const trackProductView = function(productProperties = {}, destinations = []) {
+		this.trackProductAction("product_view", productProperties, destinations);
+		success = this.sendToEndpoint(payload);
+		return success;
+    }
+    
+    /**
+	 * Tracks a product click
+	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
+	 * @return {int} 							HTTP status of the call.
+	 */
+	const trackProductClick = function(productProperties = {}, destinations = []) {
+		this.trackProductAction("product_click", productProperties, destinations);
+		var success = this.sendToEndpoint(payload);
+		return success;
+    }
+    
+    	/**
+	 * Tracks a product added to cart
+	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
+	 * @return {int} 							HTTP status of the call.
+	 */
+	const trackProductCartAdd = function(productProperties = {}, destinations = []) {
+		this.trackProductAction("cart_add", productProperties, destinations);
+		var success = this.sendToEndpoint(payload);
+		return success;
+	}
+
+	/**
+	 * Tracks a product removed from cart
+	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
+	 * @return {int} 							HTTP status of the call.
+	 */
+	const trackProductCartRemove = function(productProperties = {}, destinations = []) {
+		this.trackProductAction("cart_remove", productProperties, destinations)
+		var success = this.sendToEndpoint(payload);
+		return success;
+	}
+
+	/**
+	 * Tracks a product list view
+	 * @param  {string}		productListName 		Which product list is shown? e.g. 'category page'
+	 * @param  {dict}		productListProperties	Properties {property:{string}value} of the product list. e.g. {'category':'chrysler'}
+	 * @return {int} 								HTTP status of the call.
+	 */
+	const trackProductListView = function(productListName = undefined, productListProperties = {}, products = [], destinations = []) {
+		var properties = Object.assign({}, productListProperties, this.defaultProperties);
+		properties.hit_id = this.generateRandom(24);
+		properties.local_hit_time = this.getDateTime();
+		var payload = {
+			"track": "product_list_view",
+			"product_list_name": productListName,
+			"products": products,
+			"hit_properties": properties,
+			"destinations": destinations
+		}
+		var success = this.sendToEndpoint(payload);
+		return success;
+	}
+
+	/**
+	 * Tracks a checkout step
+	 * @param  {string}		stepName 			The name of the step of the checkout. e.g. 'address'
+	 * @param  {dict}		stepProperties		Properties {property:{string}value} of the checkout step. e.g. if you have multiple checkout flows such as pick up
+	 * @return {int} 							HTTP status of the call.
+	 */
+	const trackCheckoutStep = function(stepName, stepProperties = {}, products = [], destinations = []) {
+		var properties = Object.assign({}, stepProperties, this.defaultProperties);
+		properties.hit_id = this.generateRandom(24);
+		properties.local_hit_time = this.getDateTime();
+		var payload = {
+			"track": "step",
+			"step_name": stepName,
+			"products": products,
+			"hit_properties": properties,
+			"destinations": destinations
+		}
+		var success = this.sendToEndpoint(payload);
+		return success;
+	}
+
+	/**
+	 * Tracks a transaction
+	 * @param  {string}		transactionId 			The identifier of the transaction.
+	 * @param  {int}		transactionValue		The value of the transaction
+	 * @param  {int}		transactionVATValue
+	 * @param  {dict}		transactionProperties	Properties {property:{string}value} of the transaction such as {'payment method':'paypal'}
+	 * @return {int} 								HTTP status of the call.
+	 */
+	const trackTransaction = function(transactionId, transactionValue = 0, transactionProperties = {}, products = [], destinations = []) {
+		var properties = Object.assign({}, transactionProperties, this.defaultProperties);
+		properties.hit_id = this.generateRandom(24);
+		properties.local_hit_time = this.getDateTime();
+		var payload = {
+			"track": "transaction",
+			"transaction_id": transactionId,
+			"transaction_value": transactionValue,
+			"transaction_vat": transactionVAT,
+			"products": products,
+			"hit_properties": properties,
+			"destinations": destinations
+		}
 		var success = toHole(payload);
 		return success;
 	}
-    badgr.trackEvent = trackEvent;
+
+    badgr = {
+        'trackEvent': trackEvent,
+        'trackSearch': trackSearch,
+        'trackMetrics': trackMetrics,
+        'enrichUserProfile': enrichUserProfile,
+        'appendUserPropertyList': appendUserPropertyList,
+        'trackProductView': trackProductView,
+        'trackProductClick': trackProductClick,
+        'trackProductCartAdd': trackProductCartAdd,
+        'trackProductCartRemove': trackProductCartRemove,
+        'trackProductListView': trackProductListView,
+        'trackTransaction': trackTransaction
+    }
     return badgr
 })();
