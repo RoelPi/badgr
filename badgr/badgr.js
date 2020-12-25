@@ -570,7 +570,11 @@ window.badgr = (function() {
         }
     }
 
-    	/**
+    /***************************************/
+    /* Public Methods **********************/
+    /***************************************/
+
+    /**
 	 * Tracks an event
 	 * @param  {string}		eventName 			The identifier of the event
 	 * @param  {dict} 		eventProperties 	Properties {property:{string}value} related to the event
