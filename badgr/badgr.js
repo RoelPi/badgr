@@ -150,7 +150,6 @@ class Badgr {
 	 * @return {int} 							HTTP status of the call.
 	 */
 	trackProductAction(action = undefined, productProperties = {}, destinations = []) {
-		var properties = Object.assign({}, metricProperties, this.defaultProperties);
 		properties.hit_id = this.generateRandom(24);
 		properties.local_hit_time = this.getDateTime();
 		var payload = {

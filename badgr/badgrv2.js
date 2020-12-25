@@ -1,5 +1,6 @@
 window.badgr = (function() {
     'use strict';
+    var DEBUG_MODE = true;
     
     var d = document,
         n = navigator,
@@ -285,22 +286,11 @@ window.badgr = (function() {
         return temp.toLowerCase();
     }
 
-    const sendToEndpoint = function(food) {
-		fetch(this.endpoint, {
-			method: 'post',
-			headers: {
-				'Accept': 'application/json, text/plain, */*',
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(pl)
-		}).then(
-			function(response) {
-				return response.status;
-			}
-		)
+    const debugMode = function(pl) {
+        console.log(pl);
     }
     
-    const toHole = (url, data) => {
+    const toHole = function(url, data) {
         try {
             const req = new XMLHttpRequest();
             req.open('POST', url, true);
@@ -574,7 +564,7 @@ window.badgr = (function() {
 			"hit_properties": properties,
 			"destinations": destinations
         }
-		var success = toHole(payload);
+		var success = DEBUG_MODE ? debugMode(payload) : toHole(payload);
 		return success;
     }
     
@@ -586,17 +576,15 @@ window.badgr = (function() {
 	 * @return {int} 							HTTP status of the call.
 	 */
 	const trackSearch = function(searchTerm = undefined, searchProperties = {}, searchResults = [], destinations = []) {
-		var properties = Object.assign({}, searchProperties, this.defaultProperties);
-		properties.hit_id = this.generateRandom(24);
-		properties.local_hit_time = this.getDateTime();
+		var properties = Object.assign({}, searchProperties, getFood());
 		var payload = {
 			"track":"search",
-			"search_term": SearchTerm,
+			"search_term": searchTerm,
 			"search_results": searchResults,
 			"hit_properties": properties,
 			"destinations": destinations
 		}
-		var success = this.sendToEndpoint(payload);
+		var success = DEBUG_MODE ? debugMode(payload) : toHole(payload);
 		return success;
     }
 
@@ -607,16 +595,14 @@ window.badgr = (function() {
 	 * @return {int} 							HTTP status of the call.
 	 */
 	const trackMetrics = function(metrics = {}, metricProperties = {}, destinations = []) {
-		var properties = Object.assign({}, metricProperties, this.defaultProperties);
-		properties.hit_id = this.generateRandom(24);
-		properties.local_hit_time = this.getDateTime();
+        var properties = Object.assign({}, metricProperties, getFood());
 		var payload = {
 			"track":"metrics",
 			"metrics": metrics,
 			"hit_properties": properties,
 			"destinations": destinations
 		}
-		var success = this.sendToEndpoint(payload);
+		var success = DEBUG_MODE ? debugMode(payload) : toHole(payload);
 		return success;
 	}
 
@@ -631,7 +617,7 @@ window.badgr = (function() {
 			"user_properties": userProperties,
 			"destinations": destinations
 		}
-		var success = this.sendToEndpoint(payload);
+		var success = DEBUG_MODE ? debugMode(payload) : toHole(payload);
 		return success;
     }
     
@@ -647,7 +633,7 @@ window.badgr = (function() {
 			"user_property_list": listItems,
 			"destinations": destinations
 		}
-		success = this.sendToEndpoint(payload);
+		var success = DEBUG_MODE ? debugMode(payload) : toHole(payload);
 		return success;
     }
     
@@ -658,16 +644,14 @@ window.badgr = (function() {
 	 * @return {int} 							HTTP status of the call.
 	 */
 	const trackProductAction = function(action = undefined, productProperties = {}, destinations = []) {
-		var properties = Object.assign({}, metricProperties, this.defaultProperties);
-		properties.hit_id = this.generateRandom(24);
-		properties.local_hit_time = this.getDateTime();
+        var properties = Object.assign({}, properties, getFood());
 		var payload = {
 			"track": action,
 			"product_properties": productProperties,
 			"hit_properties": properties,
 			"destinations": destinations
 		}
-		var success = this.sendToEndpoint(payload);
+		var success = DEBUG_MODE ? debugMode(payload) : toHole(payload);
 		return success;
     }
 
@@ -677,8 +661,7 @@ window.badgr = (function() {
 	 * @return {int} 							HTTP status of the call.
 	 */
 	const trackProductView = function(productProperties = {}, destinations = []) {
-		this.trackProductAction("product_view", productProperties, destinations);
-		success = this.sendToEndpoint(payload);
+		var success = trackProductAction("product_view", productProperties, destinations);
 		return success;
     }
     
@@ -688,8 +671,7 @@ window.badgr = (function() {
 	 * @return {int} 							HTTP status of the call.
 	 */
 	const trackProductClick = function(productProperties = {}, destinations = []) {
-		this.trackProductAction("product_click", productProperties, destinations);
-		var success = this.sendToEndpoint(payload);
+		var success = trackProductAction("product_click", productProperties, destinations);
 		return success;
     }
     
@@ -699,8 +681,7 @@ window.badgr = (function() {
 	 * @return {int} 							HTTP status of the call.
 	 */
 	const trackProductCartAdd = function(productProperties = {}, destinations = []) {
-		this.trackProductAction("cart_add", productProperties, destinations);
-		var success = this.sendToEndpoint(payload);
+		var success = trackProductAction("cart_add", productProperties, destinations);
 		return success;
 	}
 
@@ -710,8 +691,7 @@ window.badgr = (function() {
 	 * @return {int} 							HTTP status of the call.
 	 */
 	const trackProductCartRemove = function(productProperties = {}, destinations = []) {
-		this.trackProductAction("cart_remove", productProperties, destinations)
-		var success = this.sendToEndpoint(payload);
+		var success = trackProductAction("cart_remove", productProperties, destinations)
 		return success;
 	}
 
@@ -722,9 +702,7 @@ window.badgr = (function() {
 	 * @return {int} 								HTTP status of the call.
 	 */
 	const trackProductListView = function(productListName = undefined, productListProperties = {}, products = [], destinations = []) {
-		var properties = Object.assign({}, productListProperties, this.defaultProperties);
-		properties.hit_id = this.generateRandom(24);
-		properties.local_hit_time = this.getDateTime();
+        var properties = Object.assign({}, productListProperties, getFood());
 		var payload = {
 			"track": "product_list_view",
 			"product_list_name": productListName,
@@ -732,7 +710,7 @@ window.badgr = (function() {
 			"hit_properties": properties,
 			"destinations": destinations
 		}
-		var success = this.sendToEndpoint(payload);
+		var success = DEBUG_MODE ? debugMode(payload) : toHole(payload);
 		return success;
 	}
 
@@ -743,9 +721,7 @@ window.badgr = (function() {
 	 * @return {int} 							HTTP status of the call.
 	 */
 	const trackCheckoutStep = function(stepName, stepProperties = {}, products = [], destinations = []) {
-		var properties = Object.assign({}, stepProperties, this.defaultProperties);
-		properties.hit_id = this.generateRandom(24);
-		properties.local_hit_time = this.getDateTime();
+        var properties = Object.assign({}, stepProperties, getFood());
 		var payload = {
 			"track": "step",
 			"step_name": stepName,
@@ -753,7 +729,7 @@ window.badgr = (function() {
 			"hit_properties": properties,
 			"destinations": destinations
 		}
-		var success = this.sendToEndpoint(payload);
+		var success = DEBUG_MODE ? debugMode(payload) : toHole(payload);
 		return success;
 	}
 
@@ -765,10 +741,8 @@ window.badgr = (function() {
 	 * @param  {dict}		transactionProperties	Properties {property:{string}value} of the transaction such as {'payment method':'paypal'}
 	 * @return {int} 								HTTP status of the call.
 	 */
-	const trackTransaction = function(transactionId, transactionValue = 0, transactionProperties = {}, products = [], destinations = []) {
-		var properties = Object.assign({}, transactionProperties, this.defaultProperties);
-		properties.hit_id = this.generateRandom(24);
-		properties.local_hit_time = this.getDateTime();
+	const trackTransaction = function(transactionId, transactionValue = 0, transactionVAT = 0, transactionProperties = {}, products = [], destinations = []) {
+        var properties = Object.assign({}, transactionProperties, getFood());
 		var payload = {
 			"track": "transaction",
 			"transaction_id": transactionId,
@@ -778,7 +752,7 @@ window.badgr = (function() {
 			"hit_properties": properties,
 			"destinations": destinations
 		}
-		var success = toHole(payload);
+		var success = DEBUG_MODE ? debugMode(payload) : toHole(payload);
 		return success;
 	}
 
@@ -793,6 +767,7 @@ window.badgr = (function() {
         'trackProductCartAdd': trackProductCartAdd,
         'trackProductCartRemove': trackProductCartRemove,
         'trackProductListView': trackProductListView,
+        'trackCheckoutStep': trackCheckoutStep,
         'trackTransaction': trackTransaction
     }
     return badgr

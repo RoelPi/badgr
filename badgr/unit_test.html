@@ -5,9 +5,18 @@
     </head>
     <body>
         <script>
-            badgr.trackEvent('roel',{},[]);
-            badgr.trackEvent('eva',{},[]);
-        
+            badgr.trackEvent('testEvent',{'type': 'test'}, ['destination1']);
+            badgr.trackSearch('testSearchTerm',{'searchBar': 'top'},['searchResult1','searchResult2'], ['destination1']);
+            badgr.trackMetrics({'metric1': 1, 'metric2': 2},{'degreeType': 'fahrenheit'}, ['destination1']);
+            badgr.enrichUserProfile({'name': 'John'}, ['destination1']);
+            badgr.appendUserPropertyList('cars', ['BMW 5','Audi A4'], ['destination1']);
+            badgr.trackProductView({'name':'Can of Coca-Cola'}, ['destination1']);
+            badgr.trackProductClick({'name':'Can of Coca-Cola'}, ['destination1']);
+            badgr.trackProductCartAdd({'name':'Can of Coca-Cola'}, ['destination1']);
+            badgr.trackProductCartRemove({'name':'Can of Coca-Cola'}, ['destination1']);
+            badgr.trackProductListView('homepageList', {'location': 'homepage'}, [{'name':'Can of Coca Cola'}], ['destination1']);
+            badgr.trackCheckoutStep('Step_Payment', {'method': 'visa'}, [{'name':'Can of Coca Cola'}], ['destination1']);
+            badgr.trackTransaction('AAA111',100,21,{'method': 'visa'}, [{'name':'Can of Coca Cola'}], ['destination1'])
         </script>
     </body>
 </html>
