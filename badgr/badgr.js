@@ -12,11 +12,8 @@ window.badgr = (function() {
         ENV = THE_SCRIPT.getAttribute("env"),
         DEBUG_MODE = !(ENV == "production"),
         HOLE = THE_SCRIPT.getAttribute('destination')
-
-    const environment = THE_SCRIPT.getAttribute("env");
     const dt = new Date();
     const dtOffset = dt.getTimezoneOffset().toString();
-    const endpoint = '';
     const visitLength = 0.5; // hours
 
     /***************************************/
@@ -529,7 +526,7 @@ window.badgr = (function() {
         return {
             "user_id": badgrId,
             "fp_id": badgrFp,
-            "visit_id": setIDCookie('huntid', badgrFp, 0.5),
+            "visit_id": setIDCookie('huntid', badgrFp, visitLength),
             "hit_id": generateRandom(16),
             "local_hit_time": getDateTime(),
             "browser_name": browserName,
