@@ -8,6 +8,11 @@ window.badgr = (function() {
         p = w.performance || w.mozPerformance || w.msPerformance || w.webkitPerformance,
         badgr = {}
 
+    const environment = '';
+    const dt = new Date();
+    const dtOffset = dt.getTimezoneOffset().toString();
+    const endpoint = '';
+    const visitLength = 0.5; // hours
 
     /***************************************/
     /* Private Methods *********************/
@@ -107,6 +112,7 @@ window.badgr = (function() {
     /* Get Referrers
     /**************************************/
     const referrer = getReferrer();
+    const referringDomain = extractHostname(referrer);
     if (!referrer.includes(w.location.hostname) || w.location.hostname == "") {
         // Set initial referrer
         localStorage.setItem('initial_referrer', referrer)
@@ -156,8 +162,32 @@ window.badgr = (function() {
     var OSName = "Unknown OS";
     if (n.appVersion.indexOf("Win") != -1) OSName = "Windows";
     if (n.appVersion.indexOf("Mac") != -1) OSName = "MacOS";
-    if (n.appVersion.indexOf("X11") != -1) OSName = "UNIX";
+    if (n.appVersion.indexOf("X11") != -1) OSName = "Unix";
     if (n.appVersion.indexOf("Linux") != -1) OSName = "Linux";
+
+    /* Get URL  
+    /**************************************/
+    const queryString = isDefined(w.location.search) ? w.location.search.toString() : '';
+    const protocol = isDefined(w.location.protocol) ? w.location.protocol.toString() : '';
+    const hostname = isDefined(w.location.host) ? w.location.host.toString() : '';
+    const href = isDefined(w.location.href) ? w.location.href.toString() : '';
+
+    const paramCampaign = getUrlParameter(href, 'utm_campaign');
+    const paramSource = getUrlParameter(href, 'utm_source');
+    const paramMedium = getUrlParameter(href, 'utm_medium');
+    const paramContent = getUrlParameter(href, 'utm_content');
+    const paramTerm = getUrlParameter(href, 'utm_term');
+
+    const urlParams = (function() {
+		var searchParams = new URLSearchParams(queryString);
+		var paramsJSON = [];
+		for(var pair of searchParams.entries()) {
+			if (!(pair[0] in ['utm_source', 'utm_medium','utm_campaign','utm_content','utm_term'])) {
+				paramsJSON.push({"paramName": pair[0].toString(), "paramValue": pair[1].toString()})
+			}
+		}
+		return paramsJSON;
+	})()
 
     /* Get Title 
     /**************************************/
@@ -176,15 +206,20 @@ window.badgr = (function() {
 
     /* Get Machine Properties
     /**************************************/
-    const touchpoints = isDefined(n.maxTouchPoints) ? n.maxTouchPoints.toString() : '0';
+    const nTouchpoints = isDefined(n.maxTouchPoints) ? n.maxTouchPoints.toString() : '0';
 	const hardwareConcurrency = isDefined(n.hardwareConcurrency) ? n.hardwareConcurrency.toString() : '0';
     const deviceMemory = isDefined(n.deviceMemory) ? n.deviceMemory.toString() : '0';
+    const userAgent = n.userAgent;
+    const navPlatform = n.platform;
+    const screenWidth = s.width;
+    const screenHeight = s.height;
+    const colorDepth = s.colorDepth;
 
     var device = "desktop";
-    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(n.userAgent)) {
+    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(userAgent)) {
         device = "tablet";
     }
-    if (/Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(n.userAgent)) {
+    if (/Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(userAgent)) {
         device = "mobile";
     }
 
@@ -244,6 +279,66 @@ window.badgr = (function() {
     if ((tempVersion = browserVersion.indexOf(" ")) != -1) {
         browserVersion = browserVersion.substring(0, tempVersion);
     }
+
+    var cookies = (function() {
+		var cookies = {};
+		if (document.cookie && document.cookie != '') {
+			var split = document.cookie.split(';');
+			for (var i = 0; i < split.length; i++) {
+				var name_value = split[i].split("=");
+				name_value[0] = name_value[0].replace(/^ /, '');
+				cookies[decodeURIComponent(name_value[0])] = decodeURIComponent(name_value[1]);
+			}
+		}
+		
+		var cookiesJSON = [];
+		for (var name in cookies) {
+			cookiesJSON.push({"cookieName": name, "cookieValue": cookies[name]})
+		}
+		return cookiesJSON;
+	})()
     
+    /* Get UserIDs
+    /**************************************/
+    var food = {
+        "hit_id": null,
+        "user_id": null,
+        "visit_id": null,
+        "browser_name": browserName,
+        "browser_major_version": majorVersion,
+        "browser_version": browserVersion,
+        "device": device,
+        "current_url": href,
+        "initial_referrer": initialReferrer,
+        "initial_referring_domain": initialReferringDomain,
+        "referring_search_engine": searchEngine,
+        "os": OSName,
+        "referrer": referrer,
+        "referring_domain": referringDomain,
+        "screen_height": screenHeight,
+        "screen_width": screenWidth,
+        "query_string": queryString,
+        "page_title": title,
+        "protocol": protocol,
+        "hostname": hostname,
+        "utm_campaign": paramCampaign,
+        "utm_source": paramSource,
+        "utm_medium": paramMedium,
+        "utm_content": paramContent,
+        "utm_term": paramTerm,
+        "color_depth": colorDepth,
+        "browser_language": language,
+        "browser_languages": languages,
+        "timezone_offset": dtOffset,
+        "user_agent": userAgent,
+        "navigator_platform": navPlatform,
+        "n_touchpoints": nTouchpoints,
+        "device_memory": deviceMemory,
+        "hardware_concurrency": hardwareConcurrency,
+        "is_java": javaEnabled,
+        "is_cookie": cookiesEnabled,
+        "queries": urlParams,
+        "cookies": cookies
+    }
     return badgr
 })();
