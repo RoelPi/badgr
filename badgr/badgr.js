@@ -577,5 +577,7 @@ class Badgr {
 		}
 		return "";
 	}
+
+	
 }
 
