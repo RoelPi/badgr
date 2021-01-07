@@ -5,7 +5,7 @@
     </head>
     <body>
         <script>
-            badgr.trackEvent('testEvent',{'type': 'test'}, ['destination1']);
+            badgr.trackEvent('testEvent',{'type': 'test','browser':'roel'}, ['destination1']);
             badgr.trackSearch('testSearchTerm',{'searchBar': 'top'},['searchResult1','searchResult2'], ['destination1']);
             badgr.trackMetrics({'metric1': 1, 'metric2': 2},{'degreeType': 'fahrenheit'}, ['destination1']);
             badgr.enrichUserProfile({'name': 'John'}, ['destination1']);

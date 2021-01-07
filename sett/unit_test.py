@@ -16,8 +16,8 @@ def test_Sett():
             'track': action,
             'event': 'test',
             'metrics': {},
-            'hit_properties': {'test': 'true'},
-            'destinations': ['my_mp'],
+            'hit_properties': {'test': 'true','browser':'roel','browser_Version':'1'},
+            'destinations': ['my_mp','my_bq'],
             'environment': 'production',
             'search_term': '',
             'search_results': [],
@@ -34,6 +34,10 @@ def test_Sett():
         req = Mock(get_json = Mock(return_value = data), args = data)
 
         # Call tested function
-        assert main.Sett(req) == ('["my_mp"]', 200, {'ContentType': 'application/json'})
+        output = main.Sett(req)
+        print(output)
+
+        # assert output == ('["my_mp","my_bq"]', 200, {'ContentType': 'application/json'})
         print('Event "{}" has passed the unit test.'.format(action))
+        break
 test_Sett()

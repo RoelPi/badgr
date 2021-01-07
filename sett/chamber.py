@@ -13,17 +13,16 @@ class Chamber:
             'visit_id','utm_campaign','utm_source','utm_medium','utm_content', \
             'utm_term','color_depth','browser_language','timezone_offset', \
             'user_agent', 'protocol', 'page_title', 'hostname','ip']
+
         for default_hit_prop in self.default_hit_props:
             if default_hit_prop not in self.badgr['hit_properties']:
-                badgr['hit_properties'][default_hit_prop] = 'unspecified'
-        
+                self.badgr['hit_properties'][default_hit_prop] = 'unspecified'
+
         # Validate default hit lists
-        default_dicts = ['cookies','queries']
-        for default_dict in default_dicts:
+        self.default_dicts = ['cookies','queries']
+        for default_dict in self.default_dicts:
             if default_dict not in self.badgr['hit_properties']:
                 self.badgr['hit_properties'][default_dict] = {}
-
-
 
     def trackEvent(self, badgr):
         return "This method is not supported."

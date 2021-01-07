@@ -5,7 +5,6 @@ import chamber
 
 class mp(chamber.Chamber):
 
-
     def __init__(self, settings = {}, badgr = {}, name = 'unspecified_name'):
         # Create Mixpanel client
         if 'api_host' not in settings:
@@ -21,11 +20,12 @@ class mp(chamber.Chamber):
         # Map properties
         if 'hit_properties' in badgr:
             super().__init__(badgr, name)
-            props = badgr['hit_properties']
+            props = self.badgr['hit_properties']
             custom_props = {}
             for prop in props:
                 if prop not in self.default_hit_props:
                     custom_props[prop] = props[prop]
+
             mapped_props = {
                 '$browser': props['browser_name'],
                 '$browser_version': props['browser_version'],
@@ -58,7 +58,7 @@ class mp(chamber.Chamber):
                 'Hostname': props['hostname']
             }
             self.badgr['hit_properties'] = {**custom_props, **mapped_props}      
-
+            
     def trackEvent(self):
         self.mp_client.track(
             self.badgr['hit_properties']['$user_id'],

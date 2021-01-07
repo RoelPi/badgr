@@ -2,6 +2,9 @@ import requests
 import importlib
 import time
 import json
+import copy
+from chamber_mp import mp
+from chamber_bq import bq
 
 sett_configuration = {
     'bq': {
@@ -18,30 +21,30 @@ sett_configuration = {
 }
 
 def Sett(request):
-    badgr = request.get_json(silent=True)
-    if 'destinations' not in badgr:
+    badgr_ = request.get_json(silent=True)
+    if 'destinations' not in badgr_:
         print('No destinations provided.')
         return json.dumps({}), 200, {'ContentType': 'application/json'}
 
-    if 'hit_properties' not in badgr:
-         badgr['hit_properties'] = {}
+    if 'hit_properties' not in badgr_:
+         badgr_['hit_properties'] = {}
 
-    badgr['hit_properties']['processing_timestamp'] = time.time()
-        
+    badgr_['hit_properties']['processing_timestamp'] = time.time()
     chambers = {}
+
     for chamber_type_name, chambers_settings in sett_configuration.items():
-        if len(list(set(badgr['destinations']) & chambers_settings.keys())) <= 0:
+        if len(list(set(badgr_['destinations']) & chambers_settings.keys())) <= 0:
             continue
-        chamber_type = importlib.import_module('chamber_' + chamber_type_name)
         for chamber_name, chamber_settings in chambers_settings.items():
-            chambers[chamber_name] = getattr(chamber_type, chamber_type_name)(chamber_settings, badgr, chamber_name)
-
-    
-    if badgr['environment'] == 'staging':
-        return badgr['destinations']
-
+            chambers[chamber_name] = {
+                'mp': mp,
+                'bq': bq
+            }[chamber_type_name](chamber_settings, copy.deepcopy(badgr_), chamber_name)
+            
+    if badgr_['environment'] == 'staging':
+        return badgr_['destinations']
     sent_to = []
-    for destination in badgr['destinations']:
+    for destination in badgr_['destinations']:
         if chambers[destination] is not None:
             if chambers[destination].send():
                 sent_to.append(destination)
