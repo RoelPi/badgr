@@ -413,9 +413,22 @@ window.badgr = (function() {
 
     /* Get Machine Properties
     /**************************************/
+    var colorGamut = (function() {
+        if (window.matchMedia && window.matchMedia("(color-gamut: srgb)").matches) {
+            return "srgb";
+        } if (window.matchMedia && window.matchMedia("(color-gamut: p3)").matches) {
+            return "p3";
+        } if (window.matchMEdia && window.matchMedia("(color-gamut: rec2020)").matches) {
+            return "rec2020";
+        }
+
+    })();
+    var reducedMotionEnabled = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
     var nTouchpoints = isDefined(n.maxTouchPoints) ? n.maxTouchPoints.toString() : '0';
 	var hardwareConcurrency = isDefined(n.hardwareConcurrency) ? n.hardwareConcurrency.toString() : '0';
     var deviceMemory = isDefined(n.deviceMemory) ? n.deviceMemory.toString() : '0';
+
     var userAgent = n.userAgent;
     var navPlatform = n.platform;
     var screenWidth = s.width;
@@ -432,6 +445,7 @@ window.badgr = (function() {
 
     /* Get Browser Properties
     /**************************************/
+    var darkThemeEnabled = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
     var language = n.language;
 	var languages = isDefined(n.languages) ? n.languages.toString() : n.language;
 	var cookiesEnabled = n.cookieEnabled ? "Cookies Enabled" : "Cookies Not Enabled";
@@ -555,6 +569,7 @@ window.badgr = (function() {
             "utm_content": paramContent,
             "utm_term": paramTerm,
             "color_depth": colorDepth,
+            "color_gamut": colorGamut,
             "browser_language": language,
             "browser_languages": languages,
             "timezone_offset": dtOffset,
@@ -563,10 +578,12 @@ window.badgr = (function() {
             "n_touchpoints": nTouchpoints,
             "device_memory": deviceMemory,
             "hardware_concurrency": hardwareConcurrency,
+            "is_reduced_motion": reducedMotionEnabled,
             "is_java": javaEnabled,
             "is_cookie": cookiesEnabled,
+            "is_dark": darkThemeEnabled,
             "queries": urlParams(),
-            "cookies": getCookies()
+            "cookies": getCookies(),
         }
     }
 
