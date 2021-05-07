@@ -414,22 +414,34 @@ window.badgr = (function() {
     /* Get Machine Properties
     /**************************************/
     var colorGamut = (function() {
-        if (window.matchMedia && window.matchMedia("(color-gamut: srgb)").matches) {
+        if (w.matchMedia && w.matchMedia("(color-gamut: srgb)").matches) {
             return "srgb";
-        } if (window.matchMedia && window.matchMedia("(color-gamut: p3)").matches) {
+        } if (w.matchMedia && w.matchMedia("(color-gamut: p3)").matches) {
             return "p3";
-        } if (window.matchMEdia && window.matchMedia("(color-gamut: rec2020)").matches) {
+        } if (w.matchMEdia && w.matchMedia("(color-gamut: rec2020)").matches) {
             return "rec2020";
         }
 
     })();
-    var reducedMotionEnabled = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var reducedMotionEnabled = w.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var sessionStorageEnabled = isDefined(w.sessionStorage);
+    // to do
+    // - contrast
+    // - forced colors
+    // - dynamic range
+    // - inverted colors
+    // - https://gitlab.torproject.org/legacy/trac/-/issues/13018
+    // - https://bugzilla.mozilla.org/show_bug.cgi?id=531915
+    // - monochrome
+    // - vendor flavors
+    // - DOM Blockers (https://github.com/fingerprintjs/fingerprintjs/blob/master/src/sources/dom_blockers.ts)
 
     var nTouchpoints = isDefined(n.maxTouchPoints) ? n.maxTouchPoints.toString() : '0';
 	var hardwareConcurrency = isDefined(n.hardwareConcurrency) ? n.hardwareConcurrency.toString() : '0';
     var deviceMemory = isDefined(n.deviceMemory) ? n.deviceMemory.toString() : '0';
 
     var userAgent = n.userAgent;
+    var vendor = n.vendor;
     var navPlatform = n.platform;
     var screenWidth = s.width;
     var screenHeight = s.height;
@@ -445,7 +457,7 @@ window.badgr = (function() {
 
     /* Get Browser Properties
     /**************************************/
-    var darkThemeEnabled = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var darkThemeEnabled = w.matchMedia && w.matchMedia("(prefers-color-scheme: dark)").matches;
     var language = n.language;
 	var languages = isDefined(n.languages) ? n.languages.toString() : n.language;
 	var cookiesEnabled = n.cookieEnabled ? "Cookies Enabled" : "Cookies Not Enabled";
@@ -575,10 +587,12 @@ window.badgr = (function() {
             "timezone_offset": dtOffset,
             "user_agent": userAgent,
             "navigator_platform": navPlatform,
+            "vendor": vendor,
             "n_touchpoints": nTouchpoints,
             "device_memory": deviceMemory,
             "hardware_concurrency": hardwareConcurrency,
             "is_reduced_motion": reducedMotionEnabled,
+            "is_session_storage": sessionStorageEnabled,
             "is_java": javaEnabled,
             "is_cookie": cookiesEnabled,
             "is_dark": darkThemeEnabled,
