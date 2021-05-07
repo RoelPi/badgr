@@ -3,6 +3,7 @@ import importlib
 import time
 import json
 import copy
+
 from chamber_mp import mp
 from chamber_bq import bq
 
@@ -39,7 +40,8 @@ def Sett(request):
             chambers[chamber_name] = {
                 'mp': mp,
                 'bq': bq
-            }[chamber_type_name](chamber_settings, copy.deepcopy(badgr_), chamber_name)
+            }[chamber_type_name](chamber_settings, badgr_, chamber_name)
+            print(badgr_)
             
     if badgr_['environment'] == 'staging':
         return badgr_['destinations']

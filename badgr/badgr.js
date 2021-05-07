@@ -12,21 +12,21 @@ window.badgr = (function() {
         ENV = THE_SCRIPT.getAttribute("env"),
         DEBUG_MODE = !(ENV == "production"),
         HOLE = THE_SCRIPT.getAttribute('destination')
-    const dt = new Date();
-    const dtOffset = dt.getTimezoneOffset().toString();
-    const visitLength = 0.5; // hours
+    var dt = new Date();
+    var dtOffset = dt.getTimezoneOffset().toString();
+    var visitLength = 0.5; // hours
 
     /***************************************/
     /* Private Methods *********************/
     /***************************************/
-    const isDefined = function(property) {
+    var isDefined = function(property) {
 		return typeof property !== 'undefined';
     }
     
-	const isString = function(property) {
+	var isString = function(property) {
 		return typeof property === 'string' || property instanceof String;
     }
-    const decode = function(url) {
+    var decode = function(url) {
         try {
             return w.decodeURIComponent(url);
         } catch (e) {
@@ -34,11 +34,11 @@ window.badgr = (function() {
         }
     }
 
-    const utf8Encode = function(arg) {
+    var utf8Encode = function(arg) {
         return unescape(w.encodeURIComponent(arg));
     }
 
-    const extractHostname = function(url) {
+    var extractHostname = function(url) {
 		var hostname;
 		if (url.indexOf("//") > -1) {
 			hostname = url.split('/')[2];
@@ -51,7 +51,7 @@ window.badgr = (function() {
 		return hostname;
 	}
 
-    const getReferrer = function() {
+    var getReferrer = function() {
 		var referrer = '';
 
 		try {
@@ -73,7 +73,7 @@ window.badgr = (function() {
 		return referrer;
     }
 
-    const getDate = function(dateObj = undefined) {
+    var getDate = function(dateObj = undefined) {
 		if (dateObj == undefined) {
 			dateObj = new Date();
 		}
@@ -85,14 +85,14 @@ window.badgr = (function() {
 		return dateStr
 	}
 
-	const getDateTime = function(dateObj = undefined) {
+	var getDateTime = function(dateObj = undefined) {
 		if (dateObj == undefined) {
 			dateObj = new Date();
 		}
 		return dateObj.toISOString();
 	}
 
-	const getCookie = function(cname) {
+	var getCookie = function(cname) {
 		var name = cname + "=";
 		var decodedCookie = decodeURIComponent(document.cookie);
 		var ca = decodedCookie.split(';');
@@ -108,7 +108,7 @@ window.badgr = (function() {
 		return "";
     }
 
-    const generateRandom = function(length) {
+    var generateRandom = function(length) {
 		var result = '';
 		var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 		var charactersLength = characters.length;
@@ -118,13 +118,15 @@ window.badgr = (function() {
 		return result;
     }
 
-    const shuffleStr = function(str) {
+    var shuffleStr = function(str) {
         return str.split('').sort(function(){
             return 0.5 - Math.random()
         }).join('');
     }
     
-    const generateUserID = function(fp) {
+    // User ID is part fingerprint, part random
+    // This is also user for visit id
+    var generateUserID = function(fp) {
         return shuffleStr(fp).substr(1,6) + generateRandom(6);
     }
 
@@ -141,14 +143,14 @@ window.badgr = (function() {
         return badgrid;
     }
 
-    const getUrlParameter = function(url, name) {
+    var getUrlParameter = function(url, name) {
 		var regexSearch = "[\\?&#]" + name + "=([^&#]*)";
 		var regex = new RegExp(regexSearch);
 		var results = regex.exec(url);
 		return results ? w.encodeURIComponent(results[1]) : '';
     }
 
-    const sha1 = function(str) {
+    var sha1 = function(str) {
         // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
         // + namespaced by: Michael White (http://getsprink.com)
         // +      input by: Brett Zamir (http://brett-zamir.me)
@@ -287,18 +289,18 @@ window.badgr = (function() {
         return temp.toLowerCase();
     }
 
-    const debugMode = function(pl) {
+    var debugMode = function(pl) {
         console.log(pl);
     }
     
-    const toHole = function(pl) {
+    var toHole = function(pl) {
         pl.environment = ENV;
         if (DEBUG_MODE) { 
             var success = debugMode(pl);
             return {'mode': 'debug'}
         }
         try {
-            const req = new XMLHttpRequest();
+            var req = new XMLHttpRequest();
             req.open('POST', HOLE, true);
             req.setRequestHeader('Content-Type', 'application/json');
             
@@ -316,8 +318,8 @@ window.badgr = (function() {
 
     /* Get Referrers
     /**************************************/
-    const referrer = getReferrer();
-    const referringDomain = extractHostname(referrer);
+    var referrer = getReferrer();
+    var referringDomain = extractHostname(referrer);
     if (!referrer.includes(w.location.hostname) || w.location.hostname == "") {
         // Set initial referrer
         localStorage.setItem('initial_referrer', referrer)
@@ -360,9 +362,9 @@ window.badgr = (function() {
         }
         
     } 
-    const initialReferrer = localStorage.getItem('initial_referrer');
-    const initialReferringDomain = localStorage.getItem('initial_referring_domain');
-    const searchEngine = localStorage.getItem('search_engine');
+    var initialReferrer = localStorage.getItem('initial_referrer');
+    var initialReferringDomain = localStorage.getItem('initial_referring_domain');
+    var searchEngine = localStorage.getItem('search_engine');
 
     var OSName = "Unknown OS";
     if (n.appVersion.indexOf("Win") != -1) OSName = "Windows";
@@ -372,18 +374,18 @@ window.badgr = (function() {
 
     /* Get URL  
     /**************************************/
-    const queryString = isDefined(w.location.search) ? w.location.search.toString() : '';
-    const protocol = isDefined(w.location.protocol) ? w.location.protocol.toString() : '';
-    const hostname = isDefined(w.location.host) ? w.location.host.toString() : '';
-    const href = isDefined(w.location.href) ? w.location.href.toString() : '';
+    var queryString = isDefined(w.location.search) ? w.location.search.toString() : '';
+    var protocol = isDefined(w.location.protocol) ? w.location.protocol.toString() : '';
+    var hostname = isDefined(w.location.host) ? w.location.host.toString() : '';
+    var href = isDefined(w.location.href) ? w.location.href.toString() : '';
 
-    const paramCampaign = getUrlParameter(href, 'utm_campaign');
-    const paramSource = getUrlParameter(href, 'utm_source');
-    const paramMedium = getUrlParameter(href, 'utm_medium');
-    const paramContent = getUrlParameter(href, 'utm_content');
-    const paramTerm = getUrlParameter(href, 'utm_term');
+    var paramCampaign = getUrlParameter(href, 'utm_campaign');
+    var paramSource = getUrlParameter(href, 'utm_source');
+    var paramMedium = getUrlParameter(href, 'utm_medium');
+    var paramContent = getUrlParameter(href, 'utm_content');
+    var paramTerm = getUrlParameter(href, 'utm_term');
 
-    const urlParams = function() {
+    var urlParams = function() {
 		var searchParams = new URLSearchParams(queryString);
 		var paramsJSON = [];
 		for(var pair of searchParams.entries()) {
@@ -396,7 +398,7 @@ window.badgr = (function() {
 
     /* Get Title 
     /**************************************/
-    const title = (function() {
+    var title = (function() {
 		var title = d.title;
 		title = title && title.text ? title.text : title;
 
@@ -411,14 +413,14 @@ window.badgr = (function() {
 
     /* Get Machine Properties
     /**************************************/
-    const nTouchpoints = isDefined(n.maxTouchPoints) ? n.maxTouchPoints.toString() : '0';
-	const hardwareConcurrency = isDefined(n.hardwareConcurrency) ? n.hardwareConcurrency.toString() : '0';
-    const deviceMemory = isDefined(n.deviceMemory) ? n.deviceMemory.toString() : '0';
-    const userAgent = n.userAgent;
-    const navPlatform = n.platform;
-    const screenWidth = s.width;
-    const screenHeight = s.height;
-    const colorDepth = s.colorDepth;
+    var nTouchpoints = isDefined(n.maxTouchPoints) ? n.maxTouchPoints.toString() : '0';
+	var hardwareConcurrency = isDefined(n.hardwareConcurrency) ? n.hardwareConcurrency.toString() : '0';
+    var deviceMemory = isDefined(n.deviceMemory) ? n.deviceMemory.toString() : '0';
+    var userAgent = n.userAgent;
+    var navPlatform = n.platform;
+    var screenWidth = s.width;
+    var screenHeight = s.height;
+    var colorDepth = s.colorDepth;
 
     var device = "desktop";
     if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(userAgent)) {
@@ -430,10 +432,10 @@ window.badgr = (function() {
 
     /* Get Browser Properties
     /**************************************/
-    const language = n.language;
-	const languages = isDefined(n.languages) ? n.languages.toString() : n.language;
-	const cookiesEnabled = n.cookieEnabled ? "Cookies Enabled" : "Cookies Not Enabled";
-	const javaEnabled = (function() {
+    var language = n.language;
+	var languages = isDefined(n.languages) ? n.languages.toString() : n.language;
+	var cookiesEnabled = n.cookieEnabled ? "Cookies Enabled" : "Cookies Not Enabled";
+	var javaEnabled = (function() {
 		if ((new RegExp('Edge[ /](\\d+[\\.\\d]+)')).test(n.userAgent)) {
 			return 'Java Enabled By Default'
 		}
@@ -506,7 +508,7 @@ window.badgr = (function() {
     
     /* Identification
     /**************************************/
-    const badgrFp = sha1([browserName,
+    var badgrFp = sha1([browserName,
         device,OSName,
         nTouchpoints,
         deviceMemory,
@@ -518,11 +520,12 @@ window.badgr = (function() {
         languages,
         dtOffset,
         userAgent].join());
-    const badgrId = setIDCookie('badgrid', badgrFp, 365);
+
+    var badgrId = setIDCookie('badgrid', badgrFp, 365);
     
     /* Putting it together
     /**************************************/
-    const getFood = function() {
+    var getFood = function() {
         return {
             "user_id": badgrId,
             "fp_id": badgrFp,
@@ -578,7 +581,7 @@ window.badgr = (function() {
 	 * @param  {list}		destinations		The destinations of the event
 	 * @return {int} 							HTTP status of the call.
 	 */
-	const trackEvent = function(eventName = undefined, eventProperties = {}, destinations = []) {
+	var trackEvent = function(eventName, eventProperties, destinations) {
 		var properties = Object.assign({}, eventProperties, getFood());
 		var payload = {
 			"track":"event",
@@ -597,7 +600,7 @@ window.badgr = (function() {
 	 * @param  {list} 		searchResults 		List of key-value dictionaries with all the search results
 	 * @return {int} 							HTTP status of the call.
 	 */
-	const trackSearch = function(searchTerm = undefined, searchProperties = {}, searchResults = [], destinations = []) {
+	var trackSearch = function(searchTerm, searchProperties, searchResults, destinations) {
 		var properties = Object.assign({}, searchProperties, getFood());
 		var payload = {
 			"track":"search",
@@ -616,7 +619,7 @@ window.badgr = (function() {
 	 * @param  {dict}		metricProperties	Properties {metric:{string}value} related to the increase or decrease
 	 * @return {int} 							HTTP status of the call.
 	 */
-	const trackMetrics = function(metrics = {}, metricProperties = {}, destinations = []) {
+	var trackMetrics = function(metrics, metricProperties, destinations) {
         var properties = Object.assign({}, metricProperties, getFood());
 		var payload = {
 			"track":"metrics",
@@ -633,7 +636,7 @@ window.badgr = (function() {
 	 * @param  {dict}		metricProperties	Properties {metric:{string}value} related to the user
 	 * @return {int} 							HTTP status of the call.
 	 */
-	const enrichUserProfile = function(userProperties = {}, destinations = []) {
+	var enrichUserProfile = function(userProperties, destinations) {
 		var payload = {
 			"track":"enrich_user",
 			"user_properties": userProperties,
@@ -649,7 +652,7 @@ window.badgr = (function() {
 	 * @param  {list}		listItems			List of key-value dictionaries you want to add to a list (key = list)
 	 * @return {int} 							HTTP status of the call.
 	 */
-	const appendUserPropertyList = function(listName, listItems = [], destinations = []) {
+	var appendUserPropertyList = function(listName, listItems, destinations) {
 		var payload = {
 			"track": "append_user_property_list",
 			"user_property_list": listItems,
@@ -665,7 +668,7 @@ window.badgr = (function() {
 	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
 	 * @return {int} 							HTTP status of the call.
 	 */
-	const trackProductAction = function(action = undefined, productProperties = {}, destinations = []) {
+	var trackProductAction = function(action, productProperties, destinations) {
         var properties = Object.assign({}, properties, getFood());
 		var payload = {
 			"track": action,
@@ -682,7 +685,7 @@ window.badgr = (function() {
 	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
 	 * @return {int} 							HTTP status of the call.
 	 */
-	const trackProductView = function(productProperties = {}, destinations = []) {
+	var trackProductView = function(productProperties, destinations) {
 		var success = trackProductAction("product_view", productProperties, destinations);
 		return success;
     }
@@ -692,7 +695,7 @@ window.badgr = (function() {
 	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
 	 * @return {int} 							HTTP status of the call.
 	 */
-	const trackProductClick = function(productProperties = {}, destinations = []) {
+	var trackProductClick = function(productProperties, destinations) {
 		var success = trackProductAction("product_click", productProperties, destinations);
 		return success;
     }
@@ -702,7 +705,7 @@ window.badgr = (function() {
 	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
 	 * @return {int} 							HTTP status of the call.
 	 */
-	const trackProductCartAdd = function(productProperties = {}, destinations = []) {
+	var trackProductCartAdd = function(productProperties, destinations) {
 		var success = trackProductAction("cart_add", productProperties, destinations);
 		return success;
 	}
@@ -712,7 +715,7 @@ window.badgr = (function() {
 	 * @param  {dict}		productProperties	Properties {property:{string}value} of the product
 	 * @return {int} 							HTTP status of the call.
 	 */
-	const trackProductCartRemove = function(productProperties = {}, destinations = []) {
+	var trackProductCartRemove = function(productProperties, destinations) {
 		var success = trackProductAction("cart_remove", productProperties, destinations)
 		return success;
 	}
@@ -723,7 +726,7 @@ window.badgr = (function() {
 	 * @param  {dict}		productListProperties	Properties {property:{string}value} of the product list. e.g. {'category':'chrysler'}
 	 * @return {int} 								HTTP status of the call.
 	 */
-	const trackProductListView = function(productListName = undefined, productListProperties = {}, products = [], destinations = []) {
+	var trackProductListView = function(productListName, productListProperties, products, destinations) {
         var properties = Object.assign({}, productListProperties, getFood());
 		var payload = {
 			"track": "product_list_view",
@@ -742,7 +745,7 @@ window.badgr = (function() {
 	 * @param  {dict}		stepProperties		Properties {property:{string}value} of the checkout step. e.g. if you have multiple checkout flows such as pick up
 	 * @return {int} 							HTTP status of the call.
 	 */
-	const trackCheckoutStep = function(stepName, stepProperties = {}, products = [], destinations = []) {
+	var trackCheckoutStep = function(stepName, stepProperties, products, destinations) {
         var properties = Object.assign({}, stepProperties, getFood());
 		var payload = {
 			"track": "step",
@@ -763,7 +766,7 @@ window.badgr = (function() {
 	 * @param  {dict}		transactionProperties	Properties {property:{string}value} of the transaction such as {'payment method':'paypal'}
 	 * @return {int} 								HTTP status of the call.
 	 */
-	const trackTransaction = function(transactionId, transactionValue = 0, transactionVAT = 0, transactionProperties = {}, products = [], destinations = []) {
+	var trackTransaction = function(transactionId, transactionValue, transactionVAT, transactionProperties, products, destinations) {
         var properties = Object.assign({}, transactionProperties, getFood());
 		var payload = {
 			"track": "transaction",

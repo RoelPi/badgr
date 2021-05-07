@@ -1,6 +1,5 @@
 class Chamber:
 
-
     def __init__(self, badgr = {}, name = 'unspecified_name'):
         self.name = name
         self.badgr = badgr
