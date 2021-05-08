@@ -318,6 +318,7 @@ window.badgr = (function() {
 
     /* Get Referrers
     /**************************************/
+    // Preferrably, a check if localStorage is enabled would be in place here.
     var referrer = getReferrer();
     var referringDomain = extractHostname(referrer);
     if (!referrer.includes(w.location.hostname) || w.location.hostname == "") {
@@ -418,21 +419,32 @@ window.badgr = (function() {
             return "srgb";
         } if (w.matchMedia && w.matchMedia("(color-gamut: p3)").matches) {
             return "p3";
-        } if (w.matchMEdia && w.matchMedia("(color-gamut: rec2020)").matches) {
+        } if (w.matchMedia && w.matchMedia("(color-gamut: rec2020)").matches) {
             return "rec2020";
+        } else {
+            return "undefined";
         }
 
     })();
-    var reducedMotionEnabled = w.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var contrastPreference = (function() {
+        if (w.matchMedia && w.matchMedia("(prefers-contrast: no-preference)").matches) {
+            return "no-preference";
+        } if (w.matchMedia && w.matchMedia("(prefers-contrast: more)").matches) {
+            return "more";
+        } if (w.matchMedia && w.matchMedia("(prefers-contrast: less)").matches) {
+            return "less";
+        } else {
+            return "undefined";
+        }
+
+    })();
+    var forcedColorsEnabled = w.matchMedia & w.matchMedia("(forced-colors: active").matches;
+    var monochromeEnabled = w.matchMedia & w.matchMedia("(monochrome)").matches;
+    var reducedMotionEnabled = w.matchMedia && w.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var invertedColorsEnabled = w.matchMedia && w.matchMedia("(inverted-colors: inverted)").matches;
     var sessionStorageEnabled = isDefined(w.sessionStorage);
-    // to do
-    // - contrast
-    // - forced colors
-    // - dynamic range
-    // - inverted colors
-    // - https://gitlab.torproject.org/legacy/trac/-/issues/13018
-    // - https://bugzilla.mozilla.org/show_bug.cgi?id=531915
-    // - monochrome
+
+    // to do  
     // - vendor flavors
     // - DOM Blockers (https://github.com/fingerprintjs/fingerprintjs/blob/master/src/sources/dom_blockers.ts)
 
@@ -478,7 +490,10 @@ window.badgr = (function() {
     var majorVersion = parseInt(n.appVersion, 10);
     var tempNameOffset, tempVersionOffset, tempVersion;
 
-    if ((tempVersionOffset = navUserAgent.indexOf("Opera")) != -1) {
+    if (navigator.brave) {
+        browserName = "Brave";
+        browserVersion = navUserAgent.substring(tempVersionOffset + 7);
+    } else if ((tempVersionOffset = navUserAgent.indexOf("Opera")) != -1) {
         browserName = "Opera";
         browserVersion = navUserAgent.substring(tempVersionOffset + 6);
         if ((tempVersionOffset = navUserAgent.indexOf("Version")) != -1)
@@ -504,7 +519,6 @@ window.badgr = (function() {
             browserName = n.appName;
         }
     }
-
     if ((tempVersion = browserVersion.indexOf(";")) != -1) {
         browserVersion = browserVersion.substring(0, tempVersion);
     }
@@ -531,9 +545,69 @@ window.badgr = (function() {
 		}
 		return cookiesJSON;
     }
-    
+
     /* Identification
     /**************************************/
+    // + By: https://github.com/fingerprintjs/fingerprintjs/blob/master/src/sources/math.ts
+    var M = Math
+    var fallbackFn = () => 0
+
+    var acos = M.acos || fallbackFn
+    var acosh = M.acosh || fallbackFn
+    var asin = M.asin || fallbackFn
+    var asinh = M.asinh || fallbackFn
+    var atanh = M.atanh || fallbackFn
+    var atan = M.atan || fallbackFn
+    var sin = M.sin || fallbackFn
+    var sinh = M.sinh || fallbackFn
+    var cos = M.cos || fallbackFn
+    var cosh = M.cosh || fallbackFn
+    var tan = M.tan || fallbackFn
+    var tanh = M.tanh || fallbackFn
+    var exp = M.exp || fallbackFn
+    var expm1 = M.expm1 || fallbackFn
+    var log1p = M.log1p || fallbackFn
+
+    // Operation polyfills
+    var powPI = function(value) { M.pow(M.PI, value) }
+    var acoshPf = function(value) { M.log(value + M.sqrt(value * value - 1)) }
+    var asinhPf = function(value) {  M.log(value + M.sqrt(value * value + 1)) }
+    var atanhPf = function(value) {  M.log((1 + value) / (1 - value)) / 2 }
+    var sinhPf = function(value) {  M.exp(value) - 1 / M.exp(value) / 2 }
+    var coshPf = function(value) {  (M.exp(value) + 1 / M.exp(value)) / 2 }
+    var expm1Pf = function(value) {  M.exp(value) - 1 }
+    var tanhPf = function(value) {  (M.exp(2 * value) - 1) / (M.exp(2 * value) + 1) }
+    var log1pPf = function(value) {  M.log(1 + value) }
+
+    var getMathFingerprint = function() {
+        return {
+            acos: acos(0.123124234234234242),
+            acosh: acosh(1e308),
+            acoshPf: acoshPf(1e154),
+            asin: asin(0.123124234234234242),
+            asinh: asinh(1),
+            asinhPf: asinhPf(1),
+            atanh: atanh(0.5),
+            atanhPf: atanhPf(0.5),
+            atan: atan(0.5),
+            sin: sin(-1e300),
+            sinh: sinh(1),
+            sinhPf: sinhPf(1),
+            cos: cos(10.000000000123),
+            cosh: cosh(1),
+            coshPf: coshPf(1),
+            tan: tan(-1e300),
+            tanh: tanh(1),
+            tanhPf: tanhPf(1),
+            exp: exp(1),
+            expm1: expm1(1),
+            expm1Pf: expm1Pf(1),
+            log1p: log1p(10),
+            log1pPf: log1pPf(10),
+            powPI: powPI(-100),
+        }
+    }
+    
     var badgrFp = sha1([browserName,
         device,OSName,
         nTouchpoints,
@@ -545,7 +619,16 @@ window.badgr = (function() {
         language,
         languages,
         dtOffset,
-        userAgent].join());
+        userAgent,
+        colorGamut,
+        forcedColorsEnabled,
+        contrastPreference,
+        reducedMotionEnabled,
+        invertedColorsEnabled,
+        sessionStorageEnabled,
+        monochromeEnabled,
+        getMathFingerprint()
+    ].join());
 
     var badgrId = setIDCookie('badgrid', badgrFp, 365);
     
@@ -558,10 +641,6 @@ window.badgr = (function() {
             "visit_id": setIDCookie('huntid', badgrFp, visitLength),
             "hit_id": generateRandom(16),
             "local_hit_time": getDateTime(),
-            "browser_name": browserName,
-            "browser_major_version": majorVersion,
-            "browser_version": browserVersion,
-            "device": device,
             "current_url": href,
             "initial_referrer": initialReferrer,
             "initial_referring_domain": initialReferringDomain,
@@ -580,8 +659,10 @@ window.badgr = (function() {
             "utm_medium": paramMedium,
             "utm_content": paramContent,
             "utm_term": paramTerm,
-            "color_depth": colorDepth,
-            "color_gamut": colorGamut,
+            "browser_name": browserName,
+            "browser_major_version": majorVersion,
+            "browser_version": browserVersion,
+            "device": device,
             "browser_language": language,
             "browser_languages": languages,
             "timezone_offset": dtOffset,
@@ -591,13 +672,19 @@ window.badgr = (function() {
             "n_touchpoints": nTouchpoints,
             "device_memory": deviceMemory,
             "hardware_concurrency": hardwareConcurrency,
+            "color_depth": colorDepth,
+            "color_gamut": colorGamut,
+            "contrast_preference": contrastPreference,
+            "is_monochrome": monochromeEnabled,
+            "is_forced_colors": forcedColorsEnabled,
+            "is_inverted": invertedColorsEnabled,
             "is_reduced_motion": reducedMotionEnabled,
             "is_session_storage": sessionStorageEnabled,
             "is_java": javaEnabled,
             "is_cookie": cookiesEnabled,
             "is_dark": darkThemeEnabled,
             "queries": urlParams(),
-            "cookies": getCookies(),
+            "cookies": getCookies()
         }
     }
 
