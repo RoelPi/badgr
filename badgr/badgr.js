@@ -12,6 +12,7 @@ window.badgr = (function() {
         ENV = THE_SCRIPT.getAttribute("env"),
         DEBUG_MODE = !(ENV == "production"),
         HOLE = THE_SCRIPT.getAttribute('destination')
+        
     var dt = new Date();
     var dtOffset = dt.getTimezoneOffset().toString();
     var visitLength = 0.5; // hours
