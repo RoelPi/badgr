@@ -1,0 +1,858 @@
+<script>
+    /**
+   * @file This file loads all relevant JS variables into the dataLayer.
+   * @copyright Roel Peters 2021
+   * @Version 2020.06.18
+   * 
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this file except in compliance with the License.
+   * You may obtain a copy of the License at
+   * http://www.apache.org/licenses/LICENSE-2.0
+   * 
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
+   */
+    window.badgr = (function () {
+        'use strict';
+
+        var d = document,
+            n = navigator,
+            s = screen,
+            w = window,
+            p = w.performance || w.mozPerformance || w.msPerformance || w.webkitPerformance,
+            badgr = {}
+
+        var PREVIEW_MODE_HEADER_VALUE = 'ZW52LTd8Q3hRcGlQamVQWFhFMVVUNVBQRXI4Z3wxN2E1MzNhZDljOGExMGVlYjY4MjA=',
+            DEBUG_MODE = {{Debug Mode}}
+            
+
+        var dt = new Date();
+        var dtOffset = dt.getTimezoneOffset().toString();
+        var visitLength = 0.5; // hours
+
+        /***************************************/
+        /* Private Methods *********************/
+        /***************************************/
+        var isDefined = function (property) {
+            return typeof property !== 'undefined';
+        }
+
+        var isString = function (property) {
+            return typeof property === 'string' || property instanceof String;
+        }
+        var decode = function (url) {
+            try {
+                return w.decodeURIComponent(url);
+            } catch (e) {
+                return unescape(url);
+            }
+        }
+
+        var utf8Encode = function (arg) {
+            return unescape(w.encodeURIComponent(arg));
+        }
+
+        var extractHostname = function (url) {
+            var hostname;
+            if (url.indexOf("//") > -1) {
+                hostname = url.split('/')[2];
+            }
+            else {
+                hostname = url.split('/')[0];
+            }
+            hostname = hostname.split(':')[0];
+            hostname = hostname.split('?')[0];
+            return hostname;
+        }
+
+        var getReferrer = function () {
+            var referrer = '';
+
+            try {
+                referrer = w.top.document.referrer;
+            } catch (e) {
+                if (w.parent) {
+                    try {
+                        referrer = w.parent.document.referrer;
+                    } catch (e2) {
+                        referrer = "";
+                    }
+                }
+            }
+
+            if (referrer === "") {
+                referrer = d.referrer;
+            }
+
+            return referrer;
+        }
+
+        var getDate = function (dateObj) {
+            if (dateObj == undefined) {
+                dateObj = new Date();
+            }
+            var dd = String(dateObj.getDate()).padStart(2, '0');
+            var mm = String(dateObj.getMonth() + 1).padStart(2, '0'); //January is 0!
+            var yyyy = dateObj.getFullYear();
+
+            dateStr = yyyy + '-' + mm + '-' + dd;
+            return dateStr
+        }
+
+        var getDateTime = function (dateObj) {
+            if (dateObj == undefined) {
+                dateObj = new Date();
+            }
+            return dateObj.toISOString();
+        }
+
+        var getCookie = function (cname) {
+            var name = cname + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
+
+        var generateRandom = function (length) {
+            var result = '';
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            var charactersLength = characters.length;
+            for (var i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            }
+            return result;
+        }
+
+        var shuffleStr = function (str) {
+            return str.split('').sort(function () {
+                return 0.5 - Math.random()
+            }).join('');
+        }
+
+        // User ID is part fingerprint, part random
+        // This is also user for visit id
+        var generateUserID = function (fp) {
+            return shuffleStr(fp).substr(1, 6) + generateRandom(6);
+        }
+
+        var setIDCookie = function (cn, fp, duration) {
+            var cn = w.encodeURIComponent(utf8Encode(cn));
+            var d = new Date();
+            var badgrid = getCookie(cn);
+            badgrid = (badgrid == "") ? badgrid = generateUserID(fp) : badgrid;
+            badgrid = w.encodeURIComponent(utf8Encode(badgrid));
+
+            d.setTime(d.getTime() + (duration * 60 * 60 * 1000));
+            var expires = "expires=" + d.toUTCString();
+            document.cookie = cn + "=" + badgrid + ";" + expires + ";path=/"
+            return badgrid;
+        }
+
+        var getUrlParameter = function (url, name) {
+            var regexSearch = "[\\?&#]" + name + "=([^&#]*)";
+            var regex = new RegExp(regexSearch);
+            var results = regex.exec(url);
+            return results ? w.encodeURIComponent(results[1]) : '';
+        }
+
+        var sha256 = function (ascii) {
+            function rightRotate(value, amount) {
+                return (value>>>amount) | (value<<(32 - amount));
+            };
+            
+            var mathPow = Math.pow;
+            var maxWord = mathPow(2, 32);
+            var lengthProperty = 'length'
+            var i, j; // Used as a counter across the whole file
+            var result = ''
+
+            var words = [];
+            var asciiBitLength = ascii[lengthProperty]*8;
+            
+            //* caching results is optional - remove/add slash from front of this line to toggle
+            // Initial hash value: first 32 bits of the fractional parts of the square roots of the first 8 primes
+            // (we actually calculate the first 64, but extra values are just ignored)
+            var hash = sha256.h = sha256.h || [];
+            // Round constants: first 32 bits of the fractional parts of the cube roots of the first 64 primes
+            var k = sha256.k = sha256.k || [];
+            var primeCounter = k[lengthProperty];
+            /*/
+            var hash = [], k = [];
+            var primeCounter = 0;
+            //*/
+
+            var isComposite = {};
+            for (var candidate = 2; primeCounter < 64; candidate++) {
+                if (!isComposite[candidate]) {
+                    for (i = 0; i < 313; i += candidate) {
+                        isComposite[i] = candidate;
+                    }
+                    hash[primeCounter] = (mathPow(candidate, .5)*maxWord)|0;
+                    k[primeCounter++] = (mathPow(candidate, 1/3)*maxWord)|0;
+                }
+            }
+            
+            ascii += '\x80' // Append Ƈ' bit (plus zero padding)
+            while (ascii[lengthProperty]%64 - 56) ascii += '\x00' // More zero padding
+            for (i = 0; i < ascii[lengthProperty]; i++) {
+                j = ascii.charCodeAt(i);
+                if (j>>8) return; // ASCII check: only accept characters in range 0-255
+                words[i>>2] |= j << ((3 - i)%4)*8;
+            }
+            words[words[lengthProperty]] = ((asciiBitLength/maxWord)|0);
+            words[words[lengthProperty]] = (asciiBitLength)
+            
+            // process each chunk
+            for (j = 0; j < words[lengthProperty];) {
+                var w = words.slice(j, j += 16); // The message is expanded into 64 words as part of the iteration
+                var oldHash = hash;
+                // This is now the undefinedworking hash", often labelled as variables a...g
+                // (we have to truncate as well, otherwise extra entries at the end accumulate
+                hash = hash.slice(0, 8);
+                
+                for (i = 0; i < 64; i++) {
+                    var i2 = i + j;
+                    // Expand the message into 64 words
+                    // Used below if 
+                    var w15 = w[i - 15], w2 = w[i - 2];
+
+                    // Iterate
+                    var a = hash[0], e = hash[4];
+                    var temp1 = hash[7]
+                        + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) // S1
+                        + ((e&hash[5])^((~e)&hash[6])) // ch
+                        + k[i]
+                        // Expand the message schedule if needed
+                        + (w[i] = (i < 16) ? w[i] : (
+                                w[i - 16]
+                                + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15>>>3)) // s0
+                                + w[i - 7]
+                                + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2>>>10)) // s1
+                            )|0
+                        );
+                    // This is only used once, so *could* be moved below, but it only saves 4 bytes and makes things unreadble
+                    var temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) // S0
+                        + ((a&hash[1])^(a&hash[2])^(hash[1]&hash[2])); // maj
+                    
+                    hash = [(temp1 + temp2)|0].concat(hash); // We don't bother trimming off the extra ones, they're harmless as long as we're truncating when we do the slice()
+                    hash[4] = (hash[4] + temp1)|0;
+                }
+                
+                for (i = 0; i < 8; i++) {
+                    hash[i] = (hash[i] + oldHash[i])|0;
+                }
+            }
+            
+            for (i = 0; i < 8; i++) {
+                for (j = 3; j + 1; j--) {
+                    var b = (hash[i]>>(j*8))&255;
+                    result += ((b < 16) ? 0 : '') + b.toString(16);
+                }
+            }
+            return result;
+        };
+
+        /* Get Referrers
+        /**************************************/
+        // Preferrably, a check if localStorage is enabled would be in place here.
+        var referrer = getReferrer();
+        var referringDomain = extractHostname(referrer);
+        if (!referrer.includes(w.location.hostname) || w.location.hostname == "") {
+            // Set initial referrer
+            localStorage.setItem('initial_referrer', referrer)
+            // Set referring domain
+            localStorage.setItem('initial_referring_domain', extractHostname(referrer))
+
+            // Set search engine
+            if (referrer.includes('google')) {
+                localStorage.setItem('search_engine', 'Google')
+            } else if (referrer.includes('bing')) {
+                localStorage.setItem('search_engine', 'Bing')
+            } else if (referrer.includes('yandex')) {
+                localStorage.setItem('search_engine', 'Yandex')
+            } else if (referrer.includes('swisscows')) {
+                localStorage.setItem('search_engine', 'Swisscows')
+            } else if (referrer.includes('duckduckgo')) {
+                localStorage.setItem('search_engine', 'DuckDuckGo')
+            } else if (referrer.includes('startpage')) {
+                localStorage.setItem('search_engine', 'Startpage')
+            } else if (referrer.includes('searchencrypt')) {
+                localStorage.setItem('search_engine', 'Search Encrypt')
+            } else if (referrer.includes('gibiru')) {
+                localStorage.setItem('search_engine', 'Gibiru')
+            } else if (referrer.includes('onesearch')) {
+                localStorage.setItem('search_engine', 'OneSearch')
+            } else if (referrer.includes('yahoo')) {
+                localStorage.setItem('search_engine', 'Yahoo')
+            } else if (referrer.includes('givewater')) {
+                localStorage.setItem('search_engine', 'giveWater')
+            } else if (referrer.includes('ekoru')) {
+                localStorage.setItem('search_engine', 'Ekoru')
+            } else if (referrer.includes('ecosia')) {
+                localStorage.setItem('search_engine', 'Ecosia')
+            } else if (referrer.includes('boardreader')) {
+                localStorage.setItem('search_engine', 'Boardreader')
+            } else if (referrer.includes('qwant')) {
+                localStorage.setItem('search_engine', 'Qwant')
+            } else {
+                localStorage.setItem('search_engine', 'none')
+            }
+
+        }
+        var initialReferrer = localStorage.getItem('initial_referrer');
+        var initialReferringDomain = localStorage.getItem('initial_referring_domain');
+        var searchEngine = localStorage.getItem('search_engine');
+
+        var OSName = "Unknown OS";
+        if (n.appVersion.indexOf("Win") != -1) OSName = "Windows";
+        if (n.appVersion.indexOf("Mac") != -1) OSName = "MacOS";
+        if (n.appVersion.indexOf("X11") != -1) OSName = "Unix";
+        if (n.appVersion.indexOf("Linux") != -1) OSName = "Linux";
+
+        /* Get URL  
+        /**************************************/
+        var queryString = isDefined(w.location.search) ? w.location.search.toString() : '';
+        var protocol = isDefined(w.location.protocol) ? w.location.protocol.toString() : '';
+        var hostname = isDefined(w.location.host) ? w.location.host.toString() : '';
+        var href = isDefined(w.location.href) ? w.location.href.toString() : '';
+
+        var paramCampaign = getUrlParameter(href, 'utm_campaign');
+        var paramSource = getUrlParameter(href, 'utm_source');
+        var paramMedium = getUrlParameter(href, 'utm_medium');
+        var paramContent = getUrlParameter(href, 'utm_content');
+        var paramTerm = getUrlParameter(href, 'utm_term');
+
+        var urlParams = function () {
+            var searchParams = new URLSearchParams(queryString);
+            var searchParamEntries = searchParams.entries();
+            var paramsJSON = [];
+            for (var i in searchParamEntries.length) {
+                if (!(searchParamEntries[i][0] in ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'])) {
+                    paramsJSON.push({ "paramName": searchParamEntries[i][0].toString(), "paramValue": searchParamEntries[i][1].toString() })
+                }
+            }
+            return paramsJSON;
+        }
+
+        /* Get Title 
+        /**************************************/
+        var title = (function () {
+            var title = d.title;
+            title = title && title.text ? title.text : title;
+
+            if (!isString(title)) {
+                var tmp = d.getElementsByTagName('title');
+                if (tmp && this.isDefined(tmp[0])) {
+                    title = tmp[0].text;
+                }
+            }
+            return title;
+        })()
+
+        /* Get Machine Properties
+        /**************************************/
+        var colorGamut = (function () {
+            if (w.matchMedia && w.matchMedia("(color-gamut: srgb)").matches) {
+                return "srgb";
+            } if (w.matchMedia && w.matchMedia("(color-gamut: p3)").matches) {
+                return "p3";
+            } if (w.matchMedia && w.matchMedia("(color-gamut: rec2020)").matches) {
+                return "rec2020";
+            } else {
+                return "undefined";
+            }
+
+        })();
+        var contrastPreference = (function () {
+            if (w.matchMedia && w.matchMedia("(prefers-contrast: no-preference)").matches) {
+                return "no-preference";
+            } if (w.matchMedia && w.matchMedia("(prefers-contrast: more)").matches) {
+                return "more";
+            } if (w.matchMedia && w.matchMedia("(prefers-contrast: less)").matches) {
+                return "less";
+            } else {
+                return "undefined";
+            }
+
+        })();
+        var forcedColorsEnabled = w.matchMedia & w.matchMedia("(forced-colors: active").matches;
+        var monochromeEnabled = w.matchMedia & w.matchMedia("(monochrome)").matches;
+        var reducedMotionEnabled = w.matchMedia && w.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var invertedColorsEnabled = w.matchMedia && w.matchMedia("(inverted-colors: inverted)").matches;
+        var sessionStorageEnabled = isDefined(w.sessionStorage);
+
+        // to do  
+        // - vendor flavors
+        // - DOM Blockers (https://github.com/fingerprintjs/fingerprintjs/blob/master/src/sources/dom_blockers.ts)
+
+        var nTouchpoints = isDefined(n.maxTouchPoints) ? n.maxTouchPoints.toString() : '0';
+        var hardwareConcurrency = isDefined(n.hardwareConcurrency) ? n.hardwareConcurrency.toString() : '0';
+        var deviceMemory = isDefined(n.deviceMemory) ? n.deviceMemory.toString() : '0';
+
+        var userAgent = n.userAgent;
+        var vendor = n.vendor;
+        var navPlatform = n.platform;
+        var screenWidth = s.width;
+        var screenHeight = s.height;
+        var colorDepth = s.colorDepth;
+
+        var device = "desktop";
+        if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(userAgent)) {
+            device = "tablet";
+        }
+        if (/Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(userAgent)) {
+            device = "mobile";
+        }
+
+        /* Get Browser Properties
+        /**************************************/
+        var darkThemeEnabled = w.matchMedia && w.matchMedia("(prefers-color-scheme: dark)").matches;
+        var language = n.language;
+        var languages = isDefined(n.languages) ? n.languages.toString() : n.language;
+        var cookiesEnabled = n.cookieEnabled ? "Cookies Enabled" : "Cookies Not Enabled";
+        var javaEnabled = (function () {
+            if ((new RegExp('Edge[ /](\\d+[\\.\\d]+)')).test(n.userAgent)) {
+                return 'Java Enabled By Default'
+            }
+            if (typeof n.javaEnabled !== 'unknown' && isDefined(n.javaEnabled) && n.javaEnabled()) {
+                return 'Java Enabled';
+            } else {
+                return 'Java Not Enabled'
+            }
+        })();
+
+        var navUserAgent = n.userAgent;
+        var browserName = n.appName;
+        var browserVersion = '' + parseFloat(n.appVersion);
+        var majorVersion = parseInt(n.appVersion, 10);
+        var tempNameOffset, tempVersionOffset, tempVersion;
+
+        if (navigator.brave) {
+            browserName = "Brave";
+            browserVersion = navUserAgent.substring(tempVersionOffset + 7);
+        } else if ((tempVersionOffset = navUserAgent.indexOf("Opera")) != -1) {
+            browserName = "Opera";
+            browserVersion = navUserAgent.substring(tempVersionOffset + 6);
+            if ((tempVersionOffset = navUserAgent.indexOf("Version")) != -1)
+                browserVersion = navUserAgent.substring(tempVersionOffset + 8);
+        } else if ((tempVersionOffset = navUserAgent.indexOf("MSIE")) != -1) {
+            browserName = "Microsoft Internet Explorer";
+            browserVersion = navUserAgent.substring(tempVersionOffset + 5);
+        } else if ((tempVersionOffset = navUserAgent.indexOf("Chrome")) != -1) {
+            browserName = "Chrome";
+            browserVersion = navUserAgent.substring(tempVersionOffset + 7);
+        } else if ((tempVersionOffset = navUserAgent.indexOf("Safari")) != -1) {
+            browserName = "Safari";
+            browserVersion = navUserAgent.substring(tempVersionOffset + 7);
+            if ((tempVersionOffset = navUserAgent.indexOf("Version")) != -1)
+                browserVersion = navUserAgent.substring(tempVersionOffset + 8);
+        } else if ((tempVersionOffset = navUserAgent.indexOf("Firefox")) != -1) {
+            browserName = "Firefox";
+            browserVersion = navUserAgent.substring(tempVersionOffset + 8);
+        } else if ((tempNameOffset = navUserAgent.lastIndexOf(' ') + 1) < (tempVersionOffset = navUserAgent.lastIndexOf('/'))) {
+            browserName = navUserAgent.substring(tempNameOffset, tempVersionOffset);
+            browserVersion = navUserAgent.substring(tempVersionOffset + 1);
+            if (browserName.toLowerCase() == browserName.toUpperCase()) {
+                browserName = n.appName;
+            }
+        }
+        if ((tempVersion = browserVersion.indexOf(";")) != -1) {
+            browserVersion = browserVersion.substring(0, tempVersion);
+        }
+
+        if ((tempVersion = browserVersion.indexOf(" ")) != -1) {
+            browserVersion = browserVersion.substring(0, tempVersion);
+        }
+        majorVersion = majorVersion.toString();
+
+        var getCookies = function () {
+            var cookies = {};
+            if (document.cookie && document.cookie != '') {
+                var split = document.cookie.split(';');
+                for (var i = 0; i < split.length; i++) {
+                    var name_value = split[i].split("=");
+                    name_value[0] = name_value[0].replace(/^ /, '');
+                    cookies[decodeURIComponent(name_value[0])] = decodeURIComponent(name_value[1]);
+                }
+            }
+
+            var cookiesJSON = [];
+            for (var name in cookies) {
+                cookiesJSON.push({ "cookieName": name, "cookieValue": cookies[name] })
+            }
+            return cookiesJSON;
+        }
+
+        /* Identification
+        /**************************************/
+        // + By: https://github.com/fingerprintjs/fingerprintjs/blob/master/src/sources/math.ts
+        var M = Math
+        var fallbackFn = function() { return 0 }
+
+        var acos = M.acos || fallbackFn
+        var acosh = M.acosh || fallbackFn
+        var asin = M.asin || fallbackFn
+        var asinh = M.asinh || fallbackFn
+        var atanh = M.atanh || fallbackFn
+        var atan = M.atan || fallbackFn
+        var sin = M.sin || fallbackFn
+        var sinh = M.sinh || fallbackFn
+        var cos = M.cos || fallbackFn
+        var cosh = M.cosh || fallbackFn
+        var tan = M.tan || fallbackFn
+        var tanh = M.tanh || fallbackFn
+        var exp = M.exp || fallbackFn
+        var expm1 = M.expm1 || fallbackFn
+        var log1p = M.log1p || fallbackFn
+
+        // Operation polyfills
+        var powPI = function (value) { M.pow(M.PI, value) }
+        var acoshPf = function (value) { M.log(value + M.sqrt(value * value - 1)) }
+        var asinhPf = function (value) { M.log(value + M.sqrt(value * value + 1)) }
+        var atanhPf = function (value) { M.log((1 + value) / (1 - value)) / 2 }
+        var sinhPf = function (value) { M.exp(value) - 1 / M.exp(value) / 2 }
+        var coshPf = function (value) { (M.exp(value) + 1 / M.exp(value)) / 2 }
+        var expm1Pf = function (value) { M.exp(value) - 1 }
+        var tanhPf = function (value) { (M.exp(2 * value) - 1) / (M.exp(2 * value) + 1) }
+        var log1pPf = function (value) { M.log(1 + value) }
+
+        var getMathFingerprint = function () {
+            return {
+                acos: acos(0.123124234234234242),
+                acosh: acosh(1e308),
+                acoshPf: acoshPf(1e154),
+                asin: asin(0.123124234234234242),
+                asinh: asinh(1),
+                asinhPf: asinhPf(1),
+                atanh: atanh(0.5),
+                atanhPf: atanhPf(0.5),
+                atan: atan(0.5),
+                sin: sin(-1e300),
+                sinh: sinh(1),
+                sinhPf: sinhPf(1),
+                cos: cos(10.000000000123),
+                cosh: cosh(1),
+                coshPf: coshPf(1),
+                tan: tan(-1e300),
+                tanh: tanh(1),
+                tanhPf: tanhPf(1),
+                exp: exp(1),
+                expm1: expm1(1),
+                expm1Pf: expm1Pf(1),
+                log1p: log1p(10),
+                log1pPf: log1pPf(10),
+                powPI: powPI(-100),
+            }
+        }
+
+        var badgrFp = sha256([browserName,
+            device, OSName,
+            nTouchpoints,
+            deviceMemory,
+            hardwareConcurrency,
+            javaEnabled,
+            cookiesEnabled,
+            colorDepth,
+            language,
+            languages,
+            dtOffset,
+            userAgent,
+            colorGamut,
+            forcedColorsEnabled,
+            contrastPreference,
+            reducedMotionEnabled,
+            invertedColorsEnabled,
+            sessionStorageEnabled,
+            monochromeEnabled,
+            getMathFingerprint()
+        ].join());
+
+        var badgrId = setIDCookie('badgrid', badgrFp, 365);
+
+        /* Putting it together
+        /**************************************/
+        var getFood = function () {
+            return {
+                "user_id": badgrId,
+                "fp_id": badgrFp,
+                "visit_id": setIDCookie('huntid', badgrFp, visitLength),
+                "hit_id": generateRandom(16),
+                "local_hit_time": getDateTime(),
+                "current_url": href,
+                "initial_referrer": initialReferrer,
+                "initial_referring_domain": initialReferringDomain,
+                "referring_search_engine": searchEngine,
+                "os": OSName,
+                "referrer": referrer,
+                "referring_domain": referringDomain,
+                "screen_height": screenHeight,
+                "screen_width": screenWidth,
+                "query_string": queryString,
+                "page_title": title,
+                "protocol": protocol,
+                "hostname": hostname,
+                "utm_campaign": paramCampaign,
+                "utm_source": paramSource,
+                "utm_medium": paramMedium,
+                "utm_content": paramContent,
+                "utm_term": paramTerm,
+                "browser_name": browserName,
+                "browser_major_version": majorVersion,
+                "browser_version": browserVersion,
+                "device": device,
+                "browser_language": language,
+                "browser_languages": languages,
+                "timezone_offset": dtOffset,
+                "user_agent": userAgent,
+                "navigator_platform": navPlatform,
+                "vendor": vendor,
+                "n_touchpoints": nTouchpoints,
+                "device_memory": deviceMemory,
+                "hardware_concurrency": hardwareConcurrency,
+                "color_depth": colorDepth,
+                "color_gamut": colorGamut,
+                "contrast_preference": contrastPreference,
+                "is_monochrome": monochromeEnabled,
+                "is_forced_colors": forcedColorsEnabled,
+                "is_inverted": invertedColorsEnabled,
+                "is_reduced_motion": reducedMotionEnabled,
+                "is_session_storage": sessionStorageEnabled,
+                "is_java": javaEnabled,
+                "is_cookie": cookiesEnabled,
+                "is_dark": darkThemeEnabled,
+                "queries": urlParams(),
+                "cookies": getCookies()
+            }
+        }
+
+        /***************************************/
+        /* Public Methods **********************/
+        /***************************************/
+
+        /**
+         * Tracks an event
+         * @param  {string}		eventName 			The identifier of the event
+         * @param  {dict} 		eventProperties 	Properties {property:{string}value} related to the event
+         * @param  {list}		destinations		The destinations of the event
+         * @return {int} 							HTTP status of the call.
+         */
+        var trackEvent = function (hole, eventName, eventProperties) {
+            var properties = Object.assign({}, eventProperties, getFood());
+            var payload = {
+                "track": "event",
+                "event_name": eventName,
+                "hit_properties": properties
+            }
+            var success = toHole(hole, payload);
+            return success;
+        }
+
+        /**
+         * Tracks a search
+         * @param  {string}		searchTerm 			The search term that the user entered to search
+         * @param  {dict}		searchProperties	Properties {property:{string}value} related to the search, e.g. if you have multiple search engines
+         * @param  {list} 		searchResults 		List of key-value dictionaries with all the search results
+         * @return {int} 							HTTP status of the call.
+         */
+        var trackSearch = function (hole, searchTerm, searchProperties, searchResults) {
+            var properties = Object.assign({}, searchProperties, getFood());
+            var payload = {
+                "track": "search",
+                "search_term": searchTerm,
+                "search_results": searchResults,
+                "hit_properties": properties
+            }
+            var success = toHole(hole, payload);
+            return success;
+        }
+
+        /**
+         * Tracks custom metrics (values that increase or decrease)
+         * @param  {dict}		metrics 			Metrics {metric:{float}value} that need to decrease or increase
+         * @param  {dict}		metricProperties	Properties {metric:{string}value} related to the increase or decrease
+         * @return {int} 							HTTP status of the call.
+         */
+        var trackMetrics = function (hole, metrics, metricProperties) {
+            var properties = Object.assign({}, metricProperties, getFood());
+            var payload = {
+                "track": "metrics",
+                "metrics": metrics,
+                "hit_properties": properties
+            }
+            var success = toHole(hole, payload);
+            return success;
+        }
+
+        /**
+         * Enrich a user profile with custom properties
+         * @param  {dict}		metricProperties	Properties {metric:{string}value} related to the user
+         * @return {int} 							HTTP status of the call.
+         */
+        var enrichUserProfile = function (hole, userProperties) {
+            var payload = {
+                "track": "enrich_user",
+                "user_properties": userProperties
+            }
+            var success = toHole(hole, payload);
+            return success;
+        }
+
+        /**
+         * Append items to a user profile list (e.g. list of cars a user owns)
+         * @param  {string}		listName 			The name of the list you want to append items to
+         * @param  {list}		listItems			List of key-value dictionaries you want to add to a list (key = list)
+         * @return {int} 							HTTP status of the call.
+         */
+        var appendUserPropertyList = function (hole, listName, listItems) {
+            var payload = {
+                "track": "append_user_property_list",
+                "user_property_list": listItems
+            }
+            var success = toHole(hole, payload);
+            return success;
+        }
+
+        /**
+         * Tracks a product action
+         * @param  {string}		action 				What is happening to the product?
+         * @param  {dict}		productProperties	Properties {property:{string}value} of the product
+         * @return {int} 							HTTP status of the call.
+         */
+        var trackProductAction = function (hole, action, productProperties) {
+            var properties = Object.assign({}, properties, getFood());
+            var payload = {
+                "track": action,
+                "product_properties": productProperties,
+                "hit_properties": properties
+            }
+            var success = toHole(hole, payload);
+            return success;
+        }
+
+        /**
+         * Tracks a product view
+         * @param  {dict}		productProperties	Properties {property:{string}value} of the product
+         * @return {int} 							HTTP status of the call.
+         */
+        var trackProductView = function (hole, productProperties) {
+            var success = trackProductAction(hole, "product_view", productProperties);
+            return success;
+        }
+
+        /**
+         * Tracks a product click
+         * @param  {dict}		productProperties	Properties {property:{string}value} of the product
+         * @return {int} 							HTTP status of the call.
+         */
+        var trackProductClick = function (hole, productProperties) {
+            var success = trackProductAction(hole, "product_click", productProperties);
+            return success;
+        }
+
+        /**
+     * Tracks a product added to cart
+     * @param  {dict}		productProperties	Properties {property:{string}value} of the product
+     * @return {int} 							HTTP status of the call.
+     */
+        var trackProductCartAdd = function (hole, productProperties) {
+            var success = trackProductAction(hole, "cart_add", productProperties);
+            return success;
+        }
+
+        /**
+         * Tracks a product removed from cart
+         * @param  {dict}		productProperties	Properties {property:{string}value} of the product
+         * @return {int} 							HTTP status of the call.
+         */
+        var trackProductCartRemove = function (hole, productProperties) {
+            var success = trackProductAction(hole, "cart_remove", productProperties)
+            return success;
+        }
+
+        /**
+         * Tracks a product list view
+         * @param  {string}		productListName 		Which product list is shown? e.g. 'category page'
+         * @param  {dict}		productListProperties	Properties {property:{string}value} of the product list. e.g. {'category':'chrysler'}
+         * @return {int} 								HTTP status of the call.
+         */
+        var trackProductListView = function (hole, productListName, productListProperties, products) {
+            var properties = Object.assign({}, productListProperties, getFood());
+            var payload = {
+                "track": "product_list_view",
+                "product_list_name": productListName,
+                "products": products,
+                "hit_properties": properties
+            }
+            var success = toHole(hole, payload);
+            return success;
+        }
+
+        /**
+         * Tracks a checkout step
+         * @param  {string}		stepName 			The name of the step of the checkout. e.g. 'address'
+         * @param  {dict}		stepProperties		Properties {property:{string}value} of the checkout step. e.g. if you have multiple checkout flows such as pick up
+         * @return {int} 							HTTP status of the call.
+         */
+        var trackCheckoutStep = function (hole, stepName, stepProperties, products) {
+            var properties = Object.assign({}, stepProperties, getFood());
+            var payload = {
+                "track": "step",
+                "step_name": stepName,
+                "products": products,
+                "hit_properties": properties
+            }
+            var success = toHole(hole, payload);
+            return success;
+        }
+
+        /**
+         * Tracks a transaction
+         * @param  {string}		transactionId 			The identifier of the transaction.
+         * @param  {int}		transactionValue		The value of the transaction
+         * @param  {int}		transactionVATValue
+         * @param  {dict}		transactionProperties	Properties {property:{string}value} of the transaction such as {'payment method':'paypal'}
+         * @return {int} 								HTTP status of the call.
+         */
+        var trackTransaction = function (hole, transactionId, transactionValue, transactionVAT, transactionProperties, products) {
+            var properties = Object.assign({}, transactionProperties, getFood());
+            var payload = {
+                "track": "transaction",
+                "transaction_id": transactionId,
+                "transaction_value": transactionValue,
+                "transaction_vat": transactionVAT,
+                "products": products,
+                "hit_properties": properties
+            }
+            var success = toHole(hole, payload);
+            return success;
+        }
+
+        badgr = {
+            'trackEvent': trackEvent,
+            'trackSearch': trackSearch,
+            'trackMetrics': trackMetrics,
+            'enrichUserProfile': enrichUserProfile,
+            'appendUserPropertyList': appendUserPropertyList,
+            'trackProductView': trackProductView,
+            'trackProductClick': trackProductClick,
+            'trackProductCartAdd': trackProductCartAdd,
+            'trackProductCartRemove': trackProductCartRemove,
+            'trackProductListView': trackProductListView,
+            'trackCheckoutStep': trackCheckoutStep,
+            'trackTransaction': trackTransaction
+        }
+        return badgr
+    })();
+</script>
